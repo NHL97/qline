@@ -141,4 +141,11 @@ class QueueDashboard extends Page
             ->take(10)
             ->get();
     }
+
+    protected function getListeners(): array
+    {
+        return [
+            'queue-updated' => 'loadCurrent',
+        ];
+    }
 }

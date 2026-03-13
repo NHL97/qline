@@ -2,12 +2,14 @@
 
 namespace App\Filament\Business;
 
-use App\Models\Subscription;
 use App\Models\Payment;
+use App\Models\Subscription;
+use App\Services\BillPlzService;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class SubscriptionBilling extends Page
 {
@@ -25,7 +27,9 @@ class SubscriptionBilling extends Page
     }
 
     public ?Subscription $activeSubscription = null;
+
     public $recentPayments = [];
+
     public bool $hasActive = false;
 
     public function mount(): void
@@ -46,5 +50,62 @@ class SubscriptionBilling extends Page
             ->take(5)
             ->get()
             ->toArray();
+    }
+
+    public function subscribe(string $type): void
+    {
+        $business = Auth::user()->business;
+        $owner = $business->owner;
+
+        $amount = $type === 'daily' ? 1200 : 30000; // cents
+        $amountRm = $type === 'daily' ? 12.00 : 300.00;
+        $description = "QLine {$type} subscription — {$business->name}";
+
+        // Create subscription record
+        $subscription = Subscription::create([
+            'business_id' => $business->id,
+            'type' => $type,
+            'status' => 'pending',
+            'starts_at' => now()->toDateString(),
+            'expires_at' => $type === 'daily'
+                             ? now()->toDateString()
+                             : now()->addMonth()->toDateString(),
+        ]);
+
+        // Create payment record
+        $payment = Payment::create([
+            'business_id' => $business->id,
+            'subscription_id' => $subscription->id,
+            'amount' => $amountRm,
+            'currency' => 'MYR',
+            'method' => 'fpx',
+            'status' => 'pending',
+        ]);
+
+        // Create BillPlz bill
+        try {
+            $bill = app(BillPlzService::class)->createBill(
+                name: $owner->name,
+                email: $owner->email,
+                amountCents: $amount,
+                description: $description,
+                redirectUrl: route('billplz.redirect'),
+                callbackUrl: route('billplz.callback'),
+                reference: 'payment_'.$payment->id,
+            );
+
+            // Update payment with bill URL
+            $payment->update(['reference' => $bill['id']]);
+
+            // Redirect to BillPlz payment page
+            $this->redirect($bill['url']);
+
+        } catch (\RuntimeException $e) {
+            // Cleanup on failure
+            $payment->delete();
+            $subscription->delete();
+
+            Notification::make()->title('Payment failed: '.$e->getMessage())->danger()->send();
+        }
     }
 }

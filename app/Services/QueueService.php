@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\QueueUpdated;
 use App\Jobs\SendWhatsAppMessage;
 use App\Models\Business;
 use App\Models\QueueEntry;
@@ -122,6 +123,7 @@ class QueueService
             if ($business->isAtDailyLimit()) {
                 $business->update(['queue_status' => 'paused']);
             }
+            $this->broadcastUpdate($business);
 
             return $entry;
         });
@@ -162,9 +164,11 @@ class QueueService
 
             // Check if anyone needs turn_approaching notification
             $this->checkApproaching($business);
+            $this->broadcastUpdate($business);
 
             return $next->fresh();
         });
+    
     }
 
     // ── Mark Serving ──────────────────────────────────────────────
@@ -199,7 +203,7 @@ class QueueService
                     $entry->wa_id,
                     'queue_done',
                     [
-                        $entry->ticket_code,    // {{1}} ticket 
+                        $entry->ticket_code,    // {{1}} ticket
                         $entry->business->name, // {{2}} business
                     ],
                     $entry->business_id,
@@ -208,6 +212,7 @@ class QueueService
             }
 
             $this->recalculatePositions($entry->business_id);
+            $this->broadcastUpdate($entry->business);
 
             return $entry->fresh();
         });
@@ -224,6 +229,7 @@ class QueueService
             ]);
 
             $this->recalculatePositions($entry->business_id);
+            $this->broadcastUpdate($entry->business);
             $this->checkApproaching(Business::findOrFail($entry->business_id));
 
             return $entry->fresh();
@@ -241,6 +247,7 @@ class QueueService
             ]);
 
             $this->recalculatePositions($entry->business_id);
+            $this->broadcastUpdate($entry->business);
 
             return $entry->fresh();
         });
@@ -253,6 +260,7 @@ class QueueService
             $business->resetQueue();
         } else {
             $business->update(['queue_status' => 'open']);
+            $this->broadcastUpdate($business);
         }
     }
 
@@ -260,12 +268,15 @@ class QueueService
     public function pauseQueue(Business $business): void
     {
         $business->update(['queue_status' => 'paused']);
+        $this->broadcastUpdate($business);
+
     }
 
     // ── Close Queue ───────────────────────────────────────────────
     public function closeQueue(Business $business): void
     {
         $business->update(['queue_status' => 'closed']);
+        $this->broadcastUpdate($business);
     }
 
     // ── Get Position Info (for status page) ───────────────────────
@@ -322,5 +333,24 @@ class QueueService
                 $entry->id,
             );
         }
+    }
+
+    private function broadcastUpdate(Business $business): void
+    {
+        $current = QueueEntry::where('business_id', $business->id)
+            ->whereIn('status', ['called', 'serving'])
+            ->latest('called_at')
+            ->first();
+
+        QueueUpdated::dispatch(
+            businessId: $business->id,
+            slug: $business->slug,
+            currentTicket: $current?->ticket_code,
+            waitingCount: QueueEntry::where('business_id', $business->id)
+                ->where('status', 'waiting')
+                ->count(),
+            queueStatus: $business->queue_status,
+            entriesToday: $business->entries_today,
+        );
     }
 }

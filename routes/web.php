@@ -16,3 +16,7 @@ Route::prefix('q/{slug}')->group(function () {
 // WhatsApp Webhook
 Route::get('/webhook/whatsapp', [App\Http\Controllers\WhatsAppWebhookController::class, 'verify'])->name('webhook.whatsapp.verify');
 Route::post('/webhook/whatsapp', [App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->name('webhook.whatsapp.handle');
+
+// BillPlz
+Route::get('/payment/return', [App\Http\Controllers\BillPlzController::class, 'redirect'])->name('billplz.redirect');
+Route::post('/payment/callback', [App\Http\Controllers\BillPlzController::class, 'callback'])->name('billplz.callback');

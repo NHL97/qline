@@ -7,8 +7,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="10">
     <title>{{ $business->name }} — Queue Display</title>
+    @vite(['resources/js/app.js'])
     <style>
         * {
             margin: 0;
@@ -143,15 +143,15 @@
         <div style="display:flex; align-items:center; gap:16px;">
             <h1>{{ $business->name }}</h1>
             @if ($business->queue_status === 'open')
-                <span
+                <span id="status-badge"
                     style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#4ade80; color:#14532d;">●
                     OPEN</span>
             @elseif($business->queue_status === 'paused')
-                <span
+                <span id="status-badge"
                     style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#eab308; color:#fff;">⏸
                     PAUSED</span>
             @else
-                <span
+                <span id="status-badge"
                     style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#dc2626; color:#fff;">✕
                     CLOSED</span>
             @endif
@@ -189,6 +189,7 @@
     </div>
 
     <script>
+        // Clock
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-MY', {
@@ -204,6 +205,59 @@
         }
         updateClock();
         setInterval(updateClock, 1000);
+
+        // Wait for Echo to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const interval = setInterval(function() {
+                if (window.Echo) {
+                    clearInterval(interval);
+
+                    window.Echo.channel('queue.{{ $business->slug }}')
+                        .listen('.queue.updated', (data) => {
+                            // Update now serving
+                            if (data.current_ticket) {
+                                document.querySelector('.now-serving').innerHTML =
+                                    '<div class="label">Now Serving</div><div class="ticket">' + data
+                                    .current_ticket + '</div>';
+                            } else {
+                                document.querySelector('.now-serving').innerHTML =
+                                    '<div class="label">Now Serving</div><div class="empty">—</div>';
+                            }
+
+                            // Update status badge
+                            const statusMap = {
+                                open: '● OPEN',
+                                paused: '⏸ PAUSED',
+                                closed: '✕ CLOSED'
+                            };
+                            const colorMap = {
+                                open: '#16a34a',
+                                paused: '#eab308',
+                                closed: '#dc2626'
+                            };
+                            const badge = document.getElementById('status-badge');
+                            if (badge) {
+                                badge.textContent = statusMap[data.queue_status] || data.queue_status;
+                                badge.style.background = colorMap[data.queue_status] || '#6b7280';
+                            }
+
+                            // Update footer
+                            const spans = document.querySelectorAll('.footer span');
+                            if (spans.length >= 2) spans[1].textContent = data.entries_today +
+                                ' served today';
+
+                            // Fetch fresh waiting list from server
+                            fetch(window.location.href)
+                                .then(r => r.text())
+                                .then(html => {
+                                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                                    document.querySelector('.waiting-list').innerHTML =
+                                        doc.querySelector('.waiting-list').innerHTML;
+                                });
+                        });
+                }
+            }, 100);
+        });
     </script>
 
 </body>

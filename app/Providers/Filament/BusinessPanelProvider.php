@@ -10,6 +10,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -28,6 +29,10 @@ class BusinessPanelProvider extends PanelProvider
             ->path('business')
             ->login()
             ->colors(['primary' => Color::Amber])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.echo-script'),
+            )
             ->discoverResources(
                 in: app_path('Filament/Business'),
                 for: 'App\\Filament\\Business'

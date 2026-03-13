@@ -143,4 +143,20 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const interval = setInterval(function() {
+                if (window.Echo) {
+                    clearInterval(interval);
+
+                    window.Echo.channel('queue.{{ auth()->user()->business->slug }}')
+                        .listen('.queue.updated', (data) => {
+                            // Tell Livewire to refresh
+                            Livewire.dispatch('queue-updated');
+                        });
+                }
+            }, 100);
+        });
+    </script>
+
 </x-filament-panels::page>

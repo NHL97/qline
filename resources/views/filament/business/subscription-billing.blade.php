@@ -1,16 +1,32 @@
 <x-filament-panels::page>
 
+    @if (session('success'))
+        <div
+            style="padding:12px 16px; background:#dcfce7; color:#166534; border-radius:10px; font-size:14px; margin-bottom:16px;">
+            ✅ {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div
+            style="padding:12px 16px; background:#fee2e2; color:#991b1b; border-radius:10px; font-size:14px; margin-bottom:16px;">
+            ❌ {{ session('error') }}
+        </div>
+    @endif
+
     <div class="max-w-2xl space-y-6">
 
         {{-- Current Plan --}}
         <div class="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Current Plan</h2>
 
-            @if($hasActive)
-                <div class="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            @if ($hasActive)
+                <div
+                    class="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">ACTIVE</span>
+                            <span
+                                class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">ACTIVE</span>
                             <span class="font-bold text-gray-900 dark:text-white capitalize">
                                 {{ $activeSubscription['type'] }} Plan
                             </span>
@@ -22,7 +38,8 @@
                             </span>
                         </p>
                         <p class="text-sm text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now()) }} days remaining
+                            {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now()) }} days
+                            remaining
                         </p>
                     </div>
                     <div class="text-right">
@@ -56,20 +73,23 @@
                     <p class="text-3xl font-black text-gray-900 dark:text-white mb-1">RM 12</p>
                     <p class="text-xs text-gray-400 mb-3">per day · 1,000 entries/day</p>
                     <p class="text-xs text-gray-500 mb-4">Perfect for events, pop-ups, and pasar malam</p>
-                    <button class="w-full py-2 text-sm font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed border-0">
-                        Coming Soon
+                    <button wire:click="subscribe('daily')"
+                        style="width:100%; padding:10px; font-size:14px; font-weight:600; border-radius:8px; background:#16a34a; color:#fff; border:none; cursor:pointer;">
+                        Subscribe — RM 12
                     </button>
                 </div>
 
                 {{-- Monthly --}}
                 <div class="p-4 rounded-lg border-2 border-green-500 text-center relative">
-                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">POPULAR</span>
+                    <span
+                        class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">POPULAR</span>
                     <p class="font-bold text-gray-900 dark:text-white mb-1">Monthly</p>
                     <p class="text-3xl font-black text-gray-900 dark:text-white mb-1">RM 300</p>
                     <p class="text-xs text-gray-400 mb-3">per month · 1,000 entries/day</p>
                     <p class="text-xs text-gray-500 mb-4">For clinics, banks, and regular businesses</p>
-                    <button class="w-full py-2 text-sm font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed border-0">
-                        Coming Soon
+                    <button wire:click="subscribe('monthly')"
+                        style="width:100%; padding:10px; font-size:14px; font-weight:600; border-radius:8px; background:#16a34a; color:#fff; border:none; cursor:pointer;">
+                        Subscribe — RM 300
                     </button>
                 </div>
             </div>
@@ -84,7 +104,8 @@
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment History</h2>
 
             @forelse($recentPayments as $payment)
-                <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                <div
+                    class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
                     <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">
                             {{ ucfirst($payment['method'] ?? 'FPX') }}
@@ -94,8 +115,10 @@
                         </p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-gray-900 dark:text-white">RM {{ number_format($payment['amount'], 2) }}</p>
-                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Paid</span>
+                        <p class="font-bold text-gray-900 dark:text-white">RM {{ number_format($payment['amount'], 2) }}
+                        </p>
+                        <span
+                            class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Paid</span>
                     </div>
                 </div>
             @empty

@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\QueueEntry;
 
 class Business extends Model
 {
@@ -31,15 +35,26 @@ class Business extends Model
     protected function casts(): array
     {
         return [
-            'is_active'      => 'boolean',
-            'last_reset_at'  => 'datetime',
+            'is_active' => 'boolean',
+            'last_reset_at' => 'datetime',
         ];
     }
 
     // ── Helpers ───────────────────────────────────────────────────
-    public function isOpen(): bool   { return $this->queue_status === 'open'; }
-    public function isPaused(): bool { return $this->queue_status === 'paused'; }
-    public function isClosed(): bool { return $this->queue_status === 'closed'; }
+    public function isOpen(): bool
+    {
+        return $this->queue_status === 'open';
+    }
+
+    public function isPaused(): bool
+    {
+        return $this->queue_status === 'paused';
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->queue_status === 'closed';
+    }
 
     public function hasActiveSubscription(): bool
     {
@@ -64,21 +79,22 @@ class Business extends Model
     {
         $this->update([
             'current_number' => 0,
-            'entries_today'  => 0,
-            'last_reset_at'  => now(),
-            'queue_status'   => 'open',
+            'entries_today' => 0,
+            'last_reset_at' => now(),
+            'queue_status' => 'open',
         ]);
     }
 
     public function nextTicketNumber(): int
     {
         $this->increment('current_number');
+
         return $this->current_number;
     }
 
     public function avgServiceMinutes(): int
     {
-        $avg = $this->queueEntries()
+        $avg = QueueEntry::where('business_id', $this->id)
             ->where('status', 'done')
             ->whereNotNull('service_minutes')
             ->latest('done_at')
@@ -89,49 +105,49 @@ class Business extends Model
     }
 
     // ── Relationships ─────────────────────────────────────────────
-    public function owner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function staff(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function staff(): HasMany
     {
         return $this->hasMany(User::class)->where('role', 'business_staff');
     }
 
-    public function queueEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function queueEntries(): HasMany
     {
         return $this->hasMany(QueueEntry::class);
     }
 
-    public function activeEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function activeEntries(): HasMany
     {
         return $this->hasMany(QueueEntry::class)
             ->whereIn('status', ['waiting', 'called', 'serving'])
             ->orderBy('position');
     }
 
-    public function whatsappMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function whatsappMessages(): HasMany
     {
         return $this->hasMany(WhatsappMessage::class);
     }
 
-    public function qrCode(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function qrCode(): HasOne
     {
         return $this->hasOne(QrCode::class);
     }
 
-    public function subscriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
     }
 
-    public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
-    public function customerFeedback(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function customerFeedback(): HasMany
     {
         return $this->hasMany(CustomerFeedback::class);
     }

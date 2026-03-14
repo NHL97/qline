@@ -31,7 +31,7 @@ class PublicQueueController extends Controller
     }
 
     // Customer Status Page — /q/{slug}/status/{entryId}
-    public function status(string $slug, int $entryId)
+    public function status(string $slug, int $entryId, Request $request)
     {
         $business = Business::where('slug', $slug)
             ->where('is_active', true)
@@ -41,13 +41,16 @@ class PublicQueueController extends Controller
             ->where('business_id', $business->id)
             ->firstOrFail();
 
+        $token = $request->get('token');
+        $canCancel = $token && $token === $entry->cancel_token;
+
         $positionInfo = app(QueueService::class)->getPositionInfo($entry);
 
-        return view('public.status', compact('business', 'entry', 'positionInfo'));
+        return view('public.status', compact('business', 'entry', 'positionInfo', 'canCancel'));
     }
 
     // Cancel from status page
-    public function cancel(string $slug, int $entryId)
+    public function cancel(string $slug, int $entryId, Request $request)
     {
         $business = Business::where('slug', $slug)
             ->where('is_active', true)
@@ -56,11 +59,12 @@ class PublicQueueController extends Controller
         $entry = QueueEntry::where('id', $entryId)
             ->where('business_id', $business->id)
             ->where('status', 'waiting')
+            ->where('cancel_token', $request->get('token'))
             ->firstOrFail();
 
         app(QueueService::class)->cancel($entry);
 
-        return redirect()->route('public.status', [$slug, $entryId])
+        return redirect()->route('public.status', [$slug, $entryId, 'token' => $entry->cancel_token])
             ->with('message', 'You have cancelled your queue spot.');
     }
 }

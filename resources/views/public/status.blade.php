@@ -219,10 +219,11 @@
             </div>
         @endif
 
-        @if ($entry->isWaiting())
+        @if ($entry->isWaiting() && $canCancel)
             <form method="POST" action="{{ route('public.cancel', [$business->slug, $entry->id]) }}"
                 onsubmit="return confirm('Are you sure you want to cancel your spot?')">
                 @csrf
+                <input type="hidden" name="token" value="{{ $entry->cancel_token }}">
                 <button type="submit" class="cancel-btn">Cancel My Spot</button>
             </form>
         @endif

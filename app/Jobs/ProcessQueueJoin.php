@@ -30,8 +30,9 @@ class ProcessQueueJoin implements ShouldQueue
             ->where('is_active', true)
             ->first();
 
-        if (!$business) {
+        if (! $business) {
             Log::warning('ProcessQueueJoin: business not found', ['join_code' => $this->joinCode]);
+
             // TODO: send WA reply "Business not found"
             return;
         }
@@ -40,7 +41,11 @@ class ProcessQueueJoin implements ShouldQueue
             $entry = $queueService->join($business, $this->waId);
 
             // Build status page URL
-            $statusUrl = route('public.status', [$business->slug, $entry->id]);
+            $statusUrl = route('public.status', [
+                'slug' => $business->slug,
+                'entryId' => $entry->id,
+                'token' => $entry->cancel_token,
+            ]);
 
             // Calculate position info
             $positionInfo = $queueService->getPositionInfo($entry);
@@ -69,11 +74,11 @@ class ProcessQueueJoin implements ShouldQueue
     {
         $messages = [
             'subscription_inactive' => 'Sorry, this business queue is currently unavailable.',
-            'queue_closed'          => "Sorry, {$business->name}'s queue is currently closed.",
-            'queue_paused'          => "Sorry, {$business->name}'s queue is currently paused. Please try again later.",
-            'queue_full'            => "Sorry, {$business->name}'s queue is full for today.",
-            'already_in_queue'      => "You are already in the queue. Check your previous message for your ticket.",
-            'too_many_cancels'      => "You have cancelled too many times today. Please visit us directly.",
+            'queue_closed' => "Sorry, {$business->name}'s queue is currently closed.",
+            'queue_paused' => "Sorry, {$business->name}'s queue is currently paused. Please try again later.",
+            'queue_full' => "Sorry, {$business->name}'s queue is full for today.",
+            'already_in_queue' => 'You are already in the queue. Check your previous message for your ticket.',
+            'too_many_cancels' => 'You have cancelled too many times today. Please visit us directly.',
         ];
 
         $message = $messages[$reason] ?? 'Sorry, something went wrong. Please try again.';

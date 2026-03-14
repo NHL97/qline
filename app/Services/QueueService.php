@@ -74,6 +74,7 @@ class QueueService
                 'source' => 'whatsapp',
                 'position' => $position,
                 'joined_at' => now(),
+                'cancel_token' => \Illuminate\Support\Str::random(32),
             ]);
 
             // Increment entries today
@@ -115,6 +116,7 @@ class QueueService
                 'source' => 'manual',
                 'position' => $position,
                 'joined_at' => now(),
+                'cancel_token' => \Illuminate\Support\Str::random(32),
             ]);
 
             $business->increment('entries_today');

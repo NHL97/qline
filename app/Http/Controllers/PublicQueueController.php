@@ -67,4 +67,26 @@ class PublicQueueController extends Controller
         return redirect()->route('public.status', [$slug, $entryId, 'token' => $entry->cancel_token])
             ->with('message', 'You have cancelled your queue spot.');
     }
+
+    public function printQr(string $slug)
+    {
+        $business = Business::where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        // Only owner or staff of this business
+        if (auth()->user()->business_id !== $business->id) {
+            abort(403);
+        }
+
+        $qrCode = $business->qrCode;
+
+        if (! $qrCode) {
+            abort(404, 'QR code not generated yet');
+        }
+
+        $qrImageUrl = $qrCode->getImageUrlAttribute();
+
+        return view('public.print-qr', compact('business', 'qrImageUrl'));
+    }
 }

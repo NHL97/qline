@@ -23,3 +23,13 @@ Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'handle'])->
 // BillPlz
 Route::get('/payment/return', [BillPlzController::class, 'redirect'])->name('billplz.redirect');
 Route::post('/payment/callback', [BillPlzController::class, 'callback'])->name('billplz.callback');
+
+Route::get('/print/qr/{slug}', [App\Http\Controllers\PublicQueueController::class, 'printQr'])
+    ->name('print.qr')
+    ->middleware('auth');
+
+Route::get('/print/ticket/{entry}', function (\App\Models\QueueEntry $entry) {
+    $business = $entry->business;
+    $positionInfo = app(\App\Services\QueueService::class)->getPositionInfo($entry);
+    return view('public/print-ticket', compact('entry', 'business', 'positionInfo'));
+})->middleware(['auth'])->name('print.ticket');

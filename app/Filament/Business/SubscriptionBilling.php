@@ -57,8 +57,8 @@ class SubscriptionBilling extends Page
         $business = Auth::user()->business;
         $owner = $business->owner;
 
-        $amount = $type === 'daily' ? 1200 : 30000; // cents
-        $amountRm = $type === 'daily' ? 12.00 : 300.00;
+        $amount = $type === 'daily' ? 1500 : 40000; // cents
+        $amountRm = $type === 'daily' ? 15.00 : 400.00;
         $description = "QLine {$type} subscription — {$business->name}";
 
         // Create subscription record

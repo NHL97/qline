@@ -3,12 +3,15 @@
 namespace App\Filament\Business;
 
 use App\Models\Business;
+use App\Models\QrCode;
 use BackedEnum;
+use chillerlan\QRCode\QRCode as QRCodeGenerator;
+use chillerlan\QRCode\QROptions;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessSettings extends Page
 {
@@ -20,7 +23,6 @@ class BusinessSettings extends Page
 
     protected static ?int $navigationSort = 5;
 
-    // Only business_owner can access
     public static function canAccess(): bool
     {
         return Auth::user()?->isBusinessOwner();
@@ -38,18 +40,29 @@ class BusinessSettings extends Page
     public int $daily_limit = 100;
     public int $notify_turns_before = 3;
 
+    // QR code
+    public ?QrCode $qrCode = null;
+    public ?string $qrImageUrl = null;
+
     public function mount(): void
     {
         $business = Auth::user()->business;
 
-        $this->name                 = $business->name;
-        $this->phone                = $business->phone ?? '';
-        $this->address              = $business->address ?? '';
-        $this->city                 = $business->city ?? '';
-        $this->state                = $business->state ?? '';
-        $this->queue_prefix         = $business->queue_prefix;
-        $this->daily_limit          = $business->daily_limit;
-        $this->notify_turns_before  = $business->notify_turns_before;
+        $this->name                = $business->name;
+        $this->phone               = $business->phone ?? '';
+        $this->address             = $business->address ?? '';
+        $this->city                = $business->city ?? '';
+        $this->state               = $business->state ?? '';
+        $this->queue_prefix        = $business->queue_prefix;
+        $this->daily_limit         = $business->daily_limit;
+        $this->notify_turns_before = $business->notify_turns_before;
+
+        // Load existing QR if any
+        $this->qrCode = QrCode::where('business_id', Auth::user()->business_id)->first();
+
+        if ($this->qrCode) {
+            $this->qrImageUrl = asset('storage/' . str_replace('public/', '', $this->qrCode->image_path));
+        }
     }
 
     public function saveBusinessDetails(): void
@@ -88,5 +101,40 @@ class BusinessSettings extends Page
         ]);
 
         Notification::make()->title('Queue settings saved')->success()->send();
+    }
+
+    public function generate(): void
+    {
+        $business = Auth::user()->business;
+
+        $waNumber = config('qline.wa_number');
+        $url = "https://wa.me/{$waNumber}?text=JOIN%20{$business->join_code}";
+
+        $options = new QROptions([
+            'outputType'  => \chillerlan\QRCode\Output\QROutputInterface::GDIMAGE_PNG,
+            'eccLevel'    => \chillerlan\QRCode\QRCode::ECC_H,
+            'scale'       => 10,
+            'imageBase64' => false,
+        ]);
+
+        $qrcode  = new QRCodeGenerator($options);
+        $imgData = $qrcode->render($url);
+
+        $filename = 'qrcodes/' . $business->slug . '.png';
+        Storage::disk('public')->put($filename, $imgData);
+
+        $this->qrCode = QrCode::updateOrCreate(
+            ['business_id' => $business->id],
+            [
+                'label'      => $business->name,
+                'url'        => $url,
+                'image_path' => 'public/' . $filename,
+                'is_active'  => true,
+            ]
+        );
+
+        $this->qrImageUrl = asset('storage/' . $filename);
+
+        Notification::make()->title('QR Code generated')->success()->send();
     }
 }

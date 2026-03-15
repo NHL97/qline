@@ -334,7 +334,7 @@ footer { border-top: 1px solid rgba(255,255,255,.06); padding: 2rem 2.5rem; disp
     <div class="proof-div"></div>
     <div class="proof-item"><div class="proof-num">&lt;5min</div><div class="proof-label">Setup time</div></div>
     <div class="proof-div"></div>
-    <div class="proof-item"><div class="proof-num">RM 12</div><div class="proof-label">Start from / day</div></div>
+    <div class="proof-item"><div class="proof-num">RM 15</div><div class="proof-label">Start from / day</div></div>
     <div class="proof-div"></div>
     <div class="proof-item"><div class="proof-num">100%</div><div class="proof-label">WhatsApp-based</div></div>
   </div>
@@ -481,18 +481,18 @@ footer { border-top: 1px solid rgba(255,255,255,.06); padding: 2rem 2.5rem; disp
       <div class="pc">
         <div class="pc-label">Daily Pass</div>
         <p class="pc-who">Perfect for events, pasar malam, pop-ups — anywhere you need a queue for just one day.</p>
-        <div class="pc-price"><sup>RM</sup>12</div>
+        <div class="pc-price"><sup>RM</sup>15</div>
         <div class="pc-per">per day</div>
-        <div class="pc-limit">Up to 1,000 customers per day</div>
+        <div class="pc-limit">Up to 500 customers per day</div>
         <a href="https://wa.me/60123456789" class="pc-btn">Get started →</a>
       </div>
       <div class="pc star">
         <div class="star-label">Best Value</div>
         <div class="pc-label">Monthly</div>
-        <p class="pc-who">For clinics, banks, regular businesses — that's less than RM 10 per day for a whole month.</p>
-        <div class="pc-price"><sup>RM</sup>300</div>
+        <p class="pc-who">For clinics, banks, regular businesses — that's less than RM 13 per day for a whole month.</p>
+        <div class="pc-price"><sup>RM</sup>400</div>
         <div class="pc-per">per month</div>
-        <div class="pc-limit">Up to 1,000 customers per day</div>
+        <div class="pc-limit">Up to 500 customers per day</div>
         <a href="https://wa.me/60123456789" class="pc-btn">Start free trial →</a>
       </div>
     </div>

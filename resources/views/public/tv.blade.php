@@ -1,258 +1,236 @@
-<div>
-    <!-- Let all your things have their places; let each part of your business have its time. - Benjamin Franklin -->
-</div>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $business->name }} — Queue Display</title>
     @vite(['resources/js/app.js'])
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: #0f172a;
             color: #fff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        .header {
-            background: #166534;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
+        /* Header */
+        .hdr {
+            padding: 18px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
         }
+        .hdr-left { display: flex; align-items: center; gap: 14px; }
+        .hdr-biz { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
 
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-        }
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+        .pill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .pill-open   { background: rgba(20,184,166,0.15); color: #14B8A6; }
+        .dot-open    { background: #14B8A6; }
+        .pill-paused { background: rgba(234,179,8,0.15);  color: #fbbf24; }
+        .dot-paused  { background: #fbbf24; }
+        .pill-closed { background: rgba(239,68,68,0.15);  color: #f87171; }
+        .dot-closed  { background: #ef4444; }
 
-        .header .time {
-            font-size: 1.2rem;
-            color: #86efac;
-        }
+        .hdr-right { text-align: right; }
+        .hdr-time { font-size: 28px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -1px; line-height: 1; }
+        .hdr-date { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 3px; }
 
-        .header .date {
-            font-size: 1rem;
-            color: #86efac;
-        }
+        /* Main grid */
+        .main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
 
-        .main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-
+        /* Now serving */
         .now-serving {
-            background: #14532d;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 60px;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            position: relative; overflow: hidden;
         }
-
-        .now-serving .label {
-            font-size: 1.2rem;
-            color: #86efac;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
+        .now-serving::before {
+            content: ''; position: absolute; top: -80px; left: -80px;
+            width: 300px; height: 300px; border-radius: 50%;
+            background: rgba(20,184,166,0.04);
         }
-
-        .now-serving .ticket {
-            font-size: 10rem;
-            font-weight: 900;
-            color: #4ade80;
-            line-height: 1;
+        .now-serving::after {
+            content: ''; position: absolute; bottom: -60px; right: -60px;
+            width: 220px; height: 220px; border-radius: 50%;
+            background: rgba(20,184,166,0.03);
         }
-
-        .now-serving .empty {
-            font-size: 3rem;
-            color: #166534;
+        .ns-label {
+            font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3);
+            letter-spacing: 5px; text-transform: uppercase; margin-bottom: 20px;
         }
-
-        .waiting-list {
-            background: #1e293b;
-            padding: 40px;
+        .ns-ticket {
+            font-size: 140px; font-weight: 700; color: #14B8A6;
+            line-height: 1; font-family: monospace; letter-spacing: -6px;
         }
+        .ns-empty { font-size: 80px; font-weight: 700; color: rgba(255,255,255,0.08); font-family: monospace; }
+        .ns-empty-label { font-size: 14px; color: rgba(255,255,255,0.2); margin-top: 12px; }
 
-        .waiting-list h2 {
-            font-size: 1rem;
-            color: #64748b;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 24px;
+        /* Waiting list */
+        .waiting { padding: 32px 36px; display: flex; flex-direction: column; overflow: hidden; }
+        .waiting-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .waiting-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 5px; text-transform: uppercase; }
+        .waiting-count { font-size: 12px; font-weight: 700; color: #14B8A6; background: rgba(20,184,166,0.1); padding: 3px 10px; border-radius: 999px; }
+
+        .waiting-item { display: flex; align-items: center; gap: 20px; padding: 14px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+        .waiting-item:last-child { border-bottom: none; }
+        .waiting-pos { font-size: 13px; color: rgba(255,255,255,0.2); font-weight: 600; width: 24px; flex-shrink: 0; }
+        .waiting-code { font-size: 32px; font-weight: 700; color: #e2e8f0; font-family: monospace; letter-spacing: -1px; line-height: 1; }
+        .waiting-item.is-next .waiting-code { color: #14B8A6; }
+        .next-badge {
+            display: inline-flex; align-items: center; padding: 2px 8px;
+            border-radius: 999px; font-size: 10px; font-weight: 700;
+            background: rgba(20,184,166,0.15); color: #14B8A6; margin-left: 8px;
         }
+        .waiting-empty { color: rgba(255,255,255,0.2); font-size: 14px; margin-top: 8px; }
 
-        .waiting-item {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 16px 0;
-            border-bottom: 1px solid #334155;
-        }
-
-        .waiting-item .pos {
-            font-size: 1.2rem;
-            color: #64748b;
-            width: 30px;
-        }
-
-        .waiting-item .code {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #e2e8f0;
-        }
-
-        .waiting-item.next .code {
-            color: #4ade80;
-        }
-
+        /* Footer */
         .footer {
-            background: #0f172a;
             padding: 12px 40px;
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px solid #1e293b;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
         }
-
-        .footer span {
-            font-size: 0.8rem;
-            color: #475569;
-        }
+        .footer-left { font-size: 12px; color: rgba(255,255,255,0.25); display: flex; align-items: center; gap: 5px; }
+        .footer-served { font-weight: 700; color: rgba(255,255,255,0.5); }
+        .footer-brand { font-size: 12px; color: rgba(255,255,255,0.2); }
+        .footer-brand span { color: #14B8A6; font-weight: 600; }
     </style>
 </head>
-
 <body>
 
-    <div class="header">
-        <div style="display:flex; align-items:center; gap:16px;">
-            <h1>{{ $business->name }}</h1>
-            @if ($business->queue_status === 'open')
-                <span id="status-badge"
-                    style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#4ade80; color:#14532d;">●
-                    OPEN</span>
-            @elseif($business->queue_status === 'paused')
-                <span id="status-badge"
-                    style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#eab308; color:#fff;">⏸
-                    PAUSED</span>
-            @else
-                <span id="status-badge"
-                    style="padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#dc2626; color:#fff;">✕
-                    CLOSED</span>
-            @endif
+    <div class="hdr">
+        <div class="hdr-left">
+            <span class="hdr-biz">{{ $business->name }}</span>
+
+            @php
+                $pillClass = match($business->queue_status) {
+                    'open'   => 'pill-open',
+                    'paused' => 'pill-paused',
+                    default  => 'pill-closed',
+                };
+                $dotClass = match($business->queue_status) {
+                    'open'   => 'dot-open',
+                    'paused' => 'dot-paused',
+                    default  => 'dot-closed',
+                };
+                $statusLabel = match($business->queue_status) {
+                    'open'   => 'OPEN',
+                    'paused' => 'PAUSED',
+                    default  => 'CLOSED',
+                };
+            @endphp
+
+            <span id="status-badge" class="status-pill {{ $pillClass }}">
+                <span class="pill-dot {{ $dotClass }}"></span>
+                {{ $statusLabel }}
+            </span>
         </div>
-        <div class="time" id="clock"></div>
-        <div class="date" id="date"></div>
+        <div class="hdr-right">
+            <div class="hdr-time" id="clock"></div>
+            <div class="hdr-date" id="date"></div>
+        </div>
     </div>
 
     <div class="main">
         <div class="now-serving">
-            <div class="label">Now Serving</div>
-            @if ($current)
-                <div class="ticket">{{ $current->ticket_code }}</div>
+            <div class="ns-label">Now serving</div>
+            @if($current)
+                <div class="ns-ticket" id="current-ticket">{{ $current->ticket_code }}</div>
             @else
-                <div class="empty">—</div>
+                <div class="ns-empty" id="current-ticket">—</div>
+                <div class="ns-empty-label">No one being served</div>
             @endif
         </div>
 
-        <div class="waiting-list">
-            <h2>Up Next</h2>
-            @forelse($next as $index => $entry)
-                <div class="waiting-item {{ $index === 0 ? 'next' : '' }}">
-                    <div class="pos">{{ $entry->position }}</div>
-                    <div class="code">{{ $entry->ticket_code }}</div>
-                </div>
-            @empty
-                <p style="color: #475569; margin-top: 20px;">Queue is empty</p>
-            @endforelse
+        <div class="waiting">
+            <div class="waiting-header">
+                <span class="waiting-title">Up next</span>
+                <span class="waiting-count" id="waiting-count">{{ count($next) }} waiting</span>
+            </div>
+
+            <div id="waiting-list">
+                @forelse($next as $index => $entry)
+                    <div class="waiting-item {{ $index === 0 ? 'is-next' : '' }}">
+                        <span class="waiting-pos">{{ $index + 1 }}</span>
+                        <span class="waiting-code">{{ $entry->ticket_code }}</span>
+                        @if($index === 0)
+                            <span class="next-badge">Next</span>
+                        @endif
+                    </div>
+                @empty
+                    <div class="waiting-empty">Queue is empty</div>
+                @endforelse
+            </div>
         </div>
     </div>
 
     <div class="footer">
-        <span>{{ $business->entries_today }} served today</span>
-        <span>Powered by QLine</span>
+        <div class="footer-left">
+            <span class="footer-served" id="served-count">{{ $business->entries_today }}</span>
+            served today
+        </div>
+        <div class="footer-brand">Powered by <span>QLine</span></div>
     </div>
 
     <script>
-        // Clock
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').textContent = now.toLocaleTimeString('en-MY', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            document.getElementById('date').textContent = now.toLocaleDateString('en-MY', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').textContent = now.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         }
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Wait for Echo to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            const interval = setInterval(function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            const interval = setInterval(function () {
                 if (window.Echo) {
                     clearInterval(interval);
 
                     window.Echo.channel('queue.{{ $business->slug }}')
                         .listen('.queue.updated', (data) => {
+
                             // Update now serving
+                            const ticketEl = document.getElementById('current-ticket');
                             if (data.current_ticket) {
-                                document.querySelector('.now-serving').innerHTML =
-                                    '<div class="label">Now Serving</div><div class="ticket">' + data
-                                    .current_ticket + '</div>';
+                                ticketEl.className = 'ns-ticket';
+                                ticketEl.textContent = data.current_ticket;
                             } else {
-                                document.querySelector('.now-serving').innerHTML =
-                                    '<div class="label">Now Serving</div><div class="empty">—</div>';
+                                ticketEl.className = 'ns-empty';
+                                ticketEl.textContent = '—';
                             }
 
                             // Update status badge
-                            const statusMap = {
-                                open: '● OPEN',
-                                paused: '⏸ PAUSED',
-                                closed: '✕ CLOSED'
-                            };
-                            const colorMap = {
-                                open: '#16a34a',
-                                paused: '#eab308',
-                                closed: '#dc2626'
-                            };
                             const badge = document.getElementById('status-badge');
-                            if (badge) {
-                                badge.textContent = statusMap[data.queue_status] || data.queue_status;
-                                badge.style.background = colorMap[data.queue_status] || '#6b7280';
+                            const pillMap  = { open: 'pill-open', paused: 'pill-paused', closed: 'pill-closed' };
+                            const dotMap   = { open: 'dot-open',  paused: 'dot-paused',  closed: 'dot-closed'  };
+                            const labelMap = { open: 'OPEN',      paused: 'PAUSED',      closed: 'CLOSED'      };
+                            if (badge && data.queue_status) {
+                                badge.className = 'status-pill ' + (pillMap[data.queue_status] || 'pill-closed');
+                                badge.innerHTML = `<span class="pill-dot ${dotMap[data.queue_status] || 'dot-closed'}"></span> ${labelMap[data.queue_status] || data.queue_status}`;
                             }
 
-                            // Update footer
-                            const spans = document.querySelectorAll('.footer span');
-                            if (spans.length >= 2) spans[1].textContent = data.entries_today +
-                                ' served today';
+                            // Update served count
+                            const servedEl = document.getElementById('served-count');
+                            if (servedEl && data.entries_today !== undefined) {
+                                servedEl.textContent = data.entries_today;
+                            }
 
-                            // Fetch fresh waiting list from server
+                            // Fetch fresh waiting list
                             fetch(window.location.href)
                                 .then(r => r.text())
                                 .then(html => {
                                     const doc = new DOMParser().parseFromString(html, 'text/html');
-                                    document.querySelector('.waiting-list').innerHTML =
-                                        doc.querySelector('.waiting-list').innerHTML;
+                                    document.getElementById('waiting-list').innerHTML =
+                                        doc.getElementById('waiting-list').innerHTML;
+                                    document.getElementById('waiting-count').textContent =
+                                        doc.getElementById('waiting-count').textContent;
                                 });
                         });
                 }
@@ -261,5 +239,4 @@
     </script>
 
 </body>
-
 </html>

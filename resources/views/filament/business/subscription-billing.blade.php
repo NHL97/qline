@@ -1,131 +1,169 @@
 <x-filament-panels::page>
+<style>
+  .sub-page { max-width: 640px; display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+  .sub-card { background: var(--color-background-primary, white); border: 0.5px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 20px 24px; }
+  .sub-card-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary, #111827); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .sub-card-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(20,184,166,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sub-card-icon svg { width: 14px; height: 14px; }
 
-    @if (session('success'))
-        <div
-            style="padding:12px 16px; background:#dcfce7; color:#166534; border-radius:10px; font-size:14px; margin-bottom:16px;">
-            ✅ {{ session('success') }}
-        </div>
-    @endif
+  /* Alert banners */
+  .alert-success { padding: 11px 16px; background: rgba(20,184,166,0.08); color: #0f766e; border-radius: 10px; font-size: 13px; border: 0.5px solid rgba(20,184,166,0.2); display: flex; align-items: center; gap: 8px; }
+  .alert-error { padding: 11px 16px; background: rgba(239,68,68,0.06); color: #b91c1c; border-radius: 10px; font-size: 13px; border: 0.5px solid rgba(239,68,68,0.15); display: flex; align-items: center; gap: 8px; }
 
-    @if (session('error'))
-        <div
-            style="padding:12px 16px; background:#fee2e2; color:#991b1b; border-radius:10px; font-size:14px; margin-bottom:16px;">
-            ❌ {{ session('error') }}
-        </div>
-    @endif
+  /* Current plan */
+  .plan-active { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 10px; background: rgba(20,184,166,0.06); border: 1px solid rgba(20,184,166,0.2); }
+  .plan-inactive { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 10px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.18); }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .badge-active { background: #14B8A6; color: #fff; }
+  .badge-inactive { background: #ef4444; color: #fff; }
+  .plan-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary, #111827); }
+  .plan-meta { font-size: 12px; color: #6b7280; margin-top: 3px; }
+  .plan-meta span { font-weight: 600; color: var(--color-text-primary, #111827); }
+  .plan-meta-muted { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+  .days-pill { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; color: #0f766e; background: rgba(20,184,166,0.08); padding: 2px 9px; border-radius: 999px; }
+  .plan-price-big { font-size: 22px; font-weight: 700; color: #14B8A6; }
+  .plan-price-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; text-align: right; }
 
-    <div class="max-w-2xl space-y-6">
+  /* Plan cards grid */
+  .plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .plan-card { border: 0.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 20px 16px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+  .plan-card-featured { border: 1.5px solid #14B8A6; }
+  .plan-popular-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); padding: 2px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #14B8A6; color: #fff; white-space: nowrap; letter-spacing: 0.04em; }
+  .plan-card-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary, #111827); margin-bottom: 8px; }
+  .plan-card-price { font-size: 28px; font-weight: 700; color: var(--color-text-primary, #111827); line-height: 1; }
+  .plan-card-period { font-size: 11px; color: #9ca3af; margin: 5px 0 8px; }
+  .plan-card-desc { font-size: 12px; color: #6b7280; margin-bottom: 16px; line-height: 1.5; flex: 1; }
+  .btn-primary { width: 100%; padding: 9px; font-size: 13px; font-weight: 600; border-radius: 8px; background: #14B8A6; color: #fff; border: none; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #0f9e8e; }
+  .btn-ghost { width: 100%; padding: 9px; font-size: 13px; font-weight: 600; border-radius: 8px; background: transparent; color: #14B8A6; border: 1px solid rgba(20,184,166,0.3); cursor: pointer; transition: background 0.15s; }
+  .btn-ghost:hover { background: rgba(20,184,166,0.06); }
+  .plans-note { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 12px; }
 
-        {{-- Current Plan --}}
-        <div class="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Current Plan</h2>
+  /* Payment history */
+  .payment-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+  .payment-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .payment-method { font-size: 13px; font-weight: 500; color: var(--color-text-primary, #111827); }
+  .payment-date { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .payment-amount { font-size: 14px; font-weight: 600; color: var(--color-text-primary, #111827); text-align: right; }
+  .paid-badge { display: inline-block; margin-top: 3px; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; background: rgba(20,184,166,0.1); color: #0f766e; }
+  .empty-state { text-align: center; padding: 28px 0; color: #9ca3af; font-size: 13px; }
+</style>
 
-            @if ($hasActive)
-                <div
-                    class="flex items-center justify-between p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span
-                                class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">ACTIVE</span>
-                            <span class="font-bold text-gray-900 dark:text-white capitalize">
-                                {{ $activeSubscription['type'] }} Plan
-                            </span>
-                        </div>
-                        <p class="text-sm text-gray-500">
-                            Valid until
-                            <span class="font-semibold text-gray-900 dark:text-white">
-                                {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->format('d M Y') }}
-                            </span>
-                        </p>
-                        <p class="text-sm text-gray-400 mt-1">
-                            {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now()) }} days
-                            remaining
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-black text-green-600">
-                            {{ $activeSubscription['type'] === 'daily' ? 'RM 12' : 'RM 300' }}
-                        </p>
-                        <p class="text-xs text-gray-400">
-                            per {{ $activeSubscription['type'] === 'daily' ? 'day' : 'month' }}
-                        </p>
-                    </div>
-                </div>
-            @else
-                <div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-red-600 text-white">INACTIVE</span>
-                        <span class="font-bold text-gray-900 dark:text-white">No Active Subscription</span>
-                    </div>
-                    <p class="text-sm text-gray-500">Your queue is currently locked. Subscribe to accept customers.</p>
-                </div>
-            @endif
-        </div>
+<div class="sub-page">
 
-        {{-- Plans --}}
-        <div class="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Available Plans</h2>
-
-            <div class="grid grid-cols-2 gap-4">
-                {{-- Daily --}}
-                <div class="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-center">
-                    <p class="font-bold text-gray-900 dark:text-white mb-1">Daily</p>
-                    <p class="text-3xl font-black text-gray-900 dark:text-white mb-1">RM 12</p>
-                    <p class="text-xs text-gray-400 mb-3">per day · 1,000 entries/day</p>
-                    <p class="text-xs text-gray-500 mb-4">Perfect for events, pop-ups, and pasar malam</p>
-                    <button wire:click="subscribe('daily')"
-                        style="width:100%; padding:10px; font-size:14px; font-weight:600; border-radius:8px; background:#16a34a; color:#fff; border:none; cursor:pointer;">
-                        Subscribe — RM 12
-                    </button>
-                </div>
-
-                {{-- Monthly --}}
-                <div class="p-4 rounded-lg border-2 border-green-500 text-center relative">
-                    <span
-                        class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 text-xs font-bold rounded-full bg-green-600 text-white">POPULAR</span>
-                    <p class="font-bold text-gray-900 dark:text-white mb-1">Monthly</p>
-                    <p class="text-3xl font-black text-gray-900 dark:text-white mb-1">RM 300</p>
-                    <p class="text-xs text-gray-400 mb-3">per month · 1,000 entries/day</p>
-                    <p class="text-xs text-gray-500 mb-4">For clinics, banks, and regular businesses</p>
-                    <button wire:click="subscribe('monthly')"
-                        style="width:100%; padding:10px; font-size:14px; font-weight:600; border-radius:8px; background:#16a34a; color:#fff; border:none; cursor:pointer;">
-                        Subscribe — RM 300
-                    </button>
-                </div>
-            </div>
-
-            <p class="text-xs text-gray-400 text-center mt-4">
-                Payment via FPX (BillPlz) · Contact us to subscribe manually for now
-            </p>
-        </div>
-
-        {{-- Payment History --}}
-        <div class="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment History</h2>
-
-            @forelse($recentPayments as $payment)
-                <div
-                    class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                    <div>
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ ucfirst($payment['method'] ?? 'FPX') }}
-                        </p>
-                        <p class="text-xs text-gray-400">
-                            {{ $payment['paid_at'] ? \Carbon\Carbon::parse($payment['paid_at'])->format('d M Y H:i') : '—' }}
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-gray-900 dark:text-white">RM {{ number_format($payment['amount'], 2) }}
-                        </p>
-                        <span
-                            class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Paid</span>
-                    </div>
-                </div>
-            @empty
-                <div class="text-center py-6 text-gray-400 text-sm">No payment history yet</div>
-            @endforelse
-        </div>
-
+  {{-- Session alerts --}}
+  @if(session('success'))
+    <div class="alert-success">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l4 4 8-8"/></svg>
+      {{ session('success') }}
     </div>
+  @endif
+  @if(session('error'))
+    <div class="alert-error">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/></svg>
+      {{ session('error') }}
+    </div>
+  @endif
+
+  {{-- Current Plan --}}
+  <div class="sub-card">
+    <div class="sub-card-title">
+      <div class="sub-card-icon">
+        <svg viewBox="0 0 16 16" fill="none" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round">
+          <rect x="1" y="4" width="14" height="9" rx="2"/>
+          <path d="M1 7h14"/>
+        </svg>
+      </div>
+      Current plan
+    </div>
+
+    @if($hasActive)
+      <div class="plan-active">
+        <div>
+          <div class="badge badge-active">ACTIVE</div>
+          <div class="plan-name">{{ ucfirst($activeSubscription['type']) }} Plan</div>
+          <div class="plan-meta">Valid until <span>{{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->format('d M Y') }}</span></div>
+          <div class="days-pill">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+            {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now()) }} days remaining
+          </div>
+        </div>
+        <div>
+          <div class="plan-price-big">{{ $activeSubscription['type'] === 'daily' ? 'RM 12' : 'RM 300' }}</div>
+          <div class="plan-price-sub">per {{ $activeSubscription['type'] === 'daily' ? 'day' : 'month' }}</div>
+        </div>
+      </div>
+    @else
+      <div class="plan-inactive">
+        <div>
+          <div class="badge badge-inactive">INACTIVE</div>
+          <div class="plan-name">No active subscription</div>
+          <div class="plan-meta-muted" style="font-size:12px;color:#9ca3af;margin-top:3px;">Your queue is currently locked. Subscribe to accept customers.</div>
+        </div>
+      </div>
+    @endif
+  </div>
+
+  {{-- Available Plans --}}
+  <div class="sub-card">
+    <div class="sub-card-title">
+      <div class="sub-card-icon">
+        <svg viewBox="0 0 16 16" fill="none" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round">
+          <path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6z"/>
+        </svg>
+      </div>
+      Available plans
+    </div>
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-card-name">Daily</div>
+        <div class="plan-card-price">RM 15</div>
+        <div class="plan-card-period">per day · 500 entries</div>
+        <div class="plan-card-desc">Perfect for events, pop-ups, and pasar malam</div>
+        <button wire:click="subscribe('daily')" class="btn-ghost">Subscribe — RM 15</button>
+      </div>
+
+      <div class="plan-card plan-card-featured">
+        <div class="plan-popular-badge">POPULAR</div>
+        <div class="plan-card-name">Monthly</div>
+        <div class="plan-card-price">RM 400</div>
+        <div class="plan-card-period">per month · 500 entries</div>
+        <div class="plan-card-desc">For clinics, banks, and regular businesses</div>
+        <button wire:click="subscribe('monthly')" class="btn-primary">Subscribe — RM 400</button>
+      </div>
+    </div>
+
+    <p class="plans-note">Payment via FPX (BillPlz) · Contact us to subscribe manually for now</p>
+  </div>
+
+  {{-- Payment History --}}
+  <div class="sub-card">
+    <div class="sub-card-title">
+      <div class="sub-card-icon">
+        <svg viewBox="0 0 16 16" fill="none" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round">
+          <path d="M2 4h12M2 8h8M2 12h5"/>
+        </svg>
+      </div>
+      Payment history
+    </div>
+
+    @forelse($recentPayments as $payment)
+      <div class="payment-row">
+        <div>
+          <div class="payment-method">{{ ucfirst($payment['method'] ?? 'FPX') }}</div>
+          <div class="payment-date">{{ $payment['paid_at'] ? \Carbon\Carbon::parse($payment['paid_at'])->format('d M Y · H:i') : '—' }}</div>
+        </div>
+        <div class="payment-amount">
+          RM {{ number_format($payment['amount'], 2) }}
+          <br><span class="paid-badge">Paid</span>
+        </div>
+      </div>
+    @empty
+      <div class="empty-state">No payment history yet</div>
+    @endforelse
+  </div>
+
+</div>
 
 </x-filament-panels::page>

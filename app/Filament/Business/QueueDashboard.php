@@ -115,15 +115,19 @@ class QueueDashboard extends Page
     }
 
     public function addManual(): void
-    {
-        try {
-            $entry = app(QueueService::class)->addManual($this->business);
-            $this->loadCurrent();
-            Notification::make()->title("Added {$entry->ticket_code} (anonymous)")->success()->send();
-        } catch (\RuntimeException $e) {
-            Notification::make()->title('Cannot add entry: '.$e->getMessage())->danger()->send();
-        }
+{
+    try {
+        $entry = app(QueueService::class)->addManual($this->business);
+        $this->loadCurrent();
+        Notification::make()->title("Added {$entry->ticket_code} (anonymous)")->success()->send();
+
+        // Open print ticket in new tab
+        $this->js("window.open('" . route('print.ticket', $entry->id) . "', '_blank')");
+
+    } catch (\RuntimeException $e) {
+        Notification::make()->title('Cannot add entry: '.$e->getMessage())->danger()->send();
     }
+}
 
     // ── Computed Properties ───────────────────────────────────────
     public function getWaitingCountProperty(): int

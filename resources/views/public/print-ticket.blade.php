@@ -281,15 +281,8 @@
     </div>
 
     <script>
-        document.addEventListener('livewire:init', function() {
-            Livewire.on('open-print-ticket', ({
-                url
-            }) => {
-                var w = window.open(url, '_blank');
-                w.addEventListener('load', function() {
-                    w.print();
-                });
-            });
+        window.addEventListener('load', function() {
+            window.print();
         });
     </script>
 

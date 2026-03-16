@@ -33,3 +33,7 @@ Route::get('/print/ticket/{entry}', function (\App\Models\QueueEntry $entry) {
     $positionInfo = app(\App\Services\QueueService::class)->getPositionInfo($entry);
     return view('public/print-ticket', compact('entry', 'business', 'positionInfo'));
 })->middleware(['auth'])->name('print.ticket');
+
+// Business Registration
+Route::get('/register', [App\Http\Controllers\BusinessRegistrationController::class, 'show'])->name('register')->middleware('guest');
+Route::post('/register', [App\Http\Controllers\BusinessRegistrationController::class, 'store'])->name('register.store')->middleware('guest');

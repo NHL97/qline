@@ -303,7 +303,7 @@ footer { border-top: 1px solid rgba(255,255,255,.06); padding: 2rem 2.5rem; disp
   <div class="nav-r">
     <a href="#how">How It Works</a>
     <a href="#pricing">Pricing</a>
-    <a href="https://wa.me/60123456789" class="nav-btn">Try Free</a>
+    <a href="/register" class="nav-btn">Register</a>
   </div>
 </nav>
 

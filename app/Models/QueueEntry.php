@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class QueueEntry extends Model
 {
@@ -28,20 +31,43 @@ class QueueEntry extends Model
     protected function casts(): array
     {
         return [
-            'joined_at'  => 'datetime',
-            'called_at'  => 'datetime',
-            'served_at'  => 'datetime',
-            'done_at'    => 'datetime',
+            'joined_at' => 'datetime',
+            'called_at' => 'datetime',
+            'served_at' => 'datetime',
+            'done_at' => 'datetime',
         ];
     }
 
     // ── Helpers ───────────────────────────────────────────────────
-    public function isWaiting(): bool  { return $this->status === 'waiting'; }
-    public function isCalled(): bool   { return $this->status === 'called'; }
-    public function isServing(): bool  { return $this->status === 'serving'; }
-    public function isDone(): bool     { return $this->status === 'done'; }
-    public function isAnonymous(): bool { return is_null($this->wa_id); }
-    public function hasWhatsApp(): bool { return !is_null($this->wa_id); }
+    public function isWaiting(): bool
+    {
+        return $this->status === 'waiting';
+    }
+
+    public function isCalled(): bool
+    {
+        return $this->status === 'called';
+    }
+
+    public function isServing(): bool
+    {
+        return $this->status === 'serving';
+    }
+
+    public function isDone(): bool
+    {
+        return $this->status === 'done';
+    }
+
+    public function isAnonymous(): bool
+    {
+        return is_null($this->wa_id);
+    }
+
+    public function hasWhatsApp(): bool
+    {
+        return ! is_null($this->wa_id);
+    }
 
     public function isActive(): bool
     {
@@ -49,18 +75,18 @@ class QueueEntry extends Model
     }
 
     // ── Relationships ─────────────────────────────────────────────
-    public function business(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    public function whatsappMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function whatsappMessages(): HasMany
     {
         return $this->hasMany(WhatsappMessage::class);
     }
 
-    public function feedback(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function feedback(): HasOne
     {
-        return $this->hasOne(CustomerFeedback::class);
+        return $this->hasOne(CustomerFeedback::class, 'queue_entry_id');
     }
 }

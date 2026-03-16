@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\AdminAnalyticsWidget;
+use App\Filament\Admin\AdminStatsWidget;
+use App\Filament\Admin\TopBusinessesWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,7 +13,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -26,7 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->colors(['primary' => Color::Green])
+            ->colors(['primary' => Color::hex('#14B8A6')])
+            ->brandLogo(view('filament.brand'))
             ->discoverResources(
                 in: app_path('Filament/Admin'),
                 for: 'App\\Filament\\Admin'
@@ -40,6 +43,11 @@ class AdminPanelProvider extends PanelProvider
                 for: 'App\\Filament\\Admin'
             )
             ->pages([Dashboard::class])
+            ->widgets([
+                AdminStatsWidget::class,
+                AdminAnalyticsWidget::class,
+                TopBusinessesWidget::class,
+            ])
             
             ->middleware([
                 EncryptCookies::class,

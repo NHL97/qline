@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Business\AnalyticsWidget;
+use App\Filament\Business\QueueStatsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -11,8 +13,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -28,7 +28,8 @@ class BusinessPanelProvider extends PanelProvider
             ->id('business')
             ->path('business')
             ->login()
-            ->colors(['primary' => Color::Amber])
+            ->colors(['primary' => Color::hex('#14B8A6')])
+            ->brandLogo(view('filament.brand'))
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => view('filament.echo-script'),
@@ -47,9 +48,10 @@ class BusinessPanelProvider extends PanelProvider
             )
             ->pages([Dashboard::class])
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                QueueStatsWidget::class,
+                AnalyticsWidget::class,
             ])
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

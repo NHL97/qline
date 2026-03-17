@@ -22,9 +22,11 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
+
     protected static ?string $navigationLabel = 'Staff';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1; // Just before Customer Feedback
 
     protected static ?string $recordTitleAttribute = 'name';
 

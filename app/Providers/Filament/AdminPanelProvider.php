@@ -30,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->colors(['primary' => Color::hex('#14B8A6')])
             ->brandLogo(view('filament.brand'))
+
             ->discoverResources(
                 in: app_path('Filament/Admin'),
                 for: 'App\\Filament\\Admin'
@@ -39,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
                 for: 'App\\Filament\\Admin'
             )
             ->discoverWidgets(
-                in: app_path('Filament/Admin'),
+                in: app_path('Filament/Admin'), 
                 for: 'App\\Filament\\Admin'
             )
             ->pages([Dashboard::class])
@@ -48,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
                 AdminAnalyticsWidget::class,
                 TopBusinessesWidget::class,
             ])
-            
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -52,6 +52,12 @@ class BusinessPanelProvider extends PanelProvider
                 AnalyticsWidget::class,
             ])
 
+            ->navigationGroups([
+                'Queue',
+                'Management',
+                'Account',
+            ])
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -19,9 +19,11 @@ class BusinessSettings extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Account';
+
     protected static ?string $navigationLabel = 'Settings';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2; // Always at the bottom
 
     public static function canAccess(): bool
     {
@@ -90,8 +92,8 @@ class BusinessSettings extends Page
     {
         $this->validate([
             'queue_prefix'        => 'required|string|max:5',
-            'daily_limit'         => 'required|integer|min:1|max:1000',
-            'notify_turns_before' => 'required|integer|min:1|max:20',
+            'daily_limit'         => 'required|integer|min:1|max:500',
+            'notify_turns_before' => 'required|integer|min:1|max:5',
         ]);
 
         Auth::user()->business->update([

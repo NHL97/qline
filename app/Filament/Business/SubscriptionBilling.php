@@ -17,9 +17,11 @@ class SubscriptionBilling extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'Account';
+
     protected static ?string $navigationLabel = 'Subscription';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 1; // Just before Settings
 
     public static function canAccess(): bool
     {

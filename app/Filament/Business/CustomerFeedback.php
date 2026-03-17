@@ -14,9 +14,11 @@ class CustomerFeedback extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
 
-    protected static ?string $navigationLabel = 'Feedback';
+    protected static string|\UnitEnum|null $navigationGroup = 'Management';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?string $navigationLabel = 'Customer Feedback';
+
+    protected static ?int $navigationSort = 3;
 
     public float $avgRating = 0;
     public int $totalFeedback = 0;

@@ -1,105 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&display=swap" rel="stylesheet">
-    <title>Get Started — QLine</title>
+    <title>Get Started</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --teal: #14B8A6;
+            --teal-dark: #0d9488;
+            --teal-light: #ccfbf1;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #94a3b8;
+            --text-label: #475569;
+            --input-bg: #f8fafc;
+            --divider: #f1f5f9;
+            --error-bg: #fff1f2;
+            --error-text: #be123c;
+            --shadow: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0a0f1e;
+                --card: #111827;
+                --border: #1e293b;
+                --text: #f1f5f9;
+                --text-muted: #475569;
+                --text-label: #94a3b8;
+                --input-bg: #0f172a;
+                --divider: #1e293b;
+                --error-bg: #1c0a0e;
+                --error-text: #fb7185;
+                --shadow: 0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+            }
         }
 
         body {
-            background: #f0fdfa;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 32px 16px;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 40px 36px;
-            max-width: 480px;
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(20, 184, 166, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            display: flex;
             width: 100%;
-            box-shadow: 0 4px 32px rgba(20, 184, 166, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(20, 184, 166, 0.12);
+            max-width: 960px;
+            gap: 0;
+            position: relative;
+            z-index: 1;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
-        /* Logo */
-        .logo {
-            text-align: center;
-            margin-bottom: 32px;
+        /* Left panel */
+        .left-panel {
+            width: 320px;
+            flex-shrink: 0;
+            background: linear-gradient(160deg, #0d9488 0%, #0f766e 40%, #065f52 100%);
+            padding: 48px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo-mark {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
         }
 
-        .logo-name {
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .brand {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-logo {
             font-family: 'Syne', sans-serif;
             font-weight: 800;
             font-size: 2rem;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 8px;
         }
 
-        .logo-name em {
+        .brand-logo em {
             font-style: normal;
-            color: #14B8A6;
+            color: rgba(255,255,255,0.5);
         }
 
-        .logo-tagline {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        /* Heading */
-        .page-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 3px;
-        }
-
-        .page-sub {
+        .brand-tagline {
             font-size: 13px;
-            color: #9ca3af;
-            margin-bottom: 24px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 500;
+            letter-spacing: 0.01em;
         }
 
-        /* Alert */
-        .alert-error {
-            background: rgba(239, 68, 68, 0.06);
-            color: #b91c1c;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 13px;
+        .features {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
             margin-bottom: 20px;
-            border: 0.5px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 15px;
         }
 
-        /* Section label */
+        .feature-text strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .feature-text span {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.4;
+        }
+
+        .left-footer {
+            position: relative;
+            z-index: 1;
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        /* Right panel (form) */
+        .right-panel {
+            flex: 1;
+            background: var(--card);
+            padding: 48px 44px;
+            overflow-y: auto;
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+        }
+
+        .form-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        .form-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
         .section-label {
             font-size: 10px;
             font-weight: 700;
-            color: #14B8A6;
+            color: var(--teal);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 14px;
+            letter-spacing: 1.5px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -108,245 +226,268 @@
         .section-label::after {
             content: '';
             flex: 1;
-            height: 0.5px;
-            background: rgba(20, 184, 166, 0.15);
+            height: 1px;
+            background: var(--border);
         }
 
-        /* Fields */
         .field {
             margin-bottom: 14px;
         }
 
         .field label {
             display: block;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 5px;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            color: var(--text-label);
+            margin-bottom: 6px;
+            letter-spacing: 0.01em;
         }
 
         .field input {
             width: 100%;
-            padding: 10px 13px;
-            border: 0.5px solid rgba(0, 0, 0, 0.15);
-            border-radius: 9px;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             font-size: 14px;
-            color: #111827;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            background: var(--input-bg);
             outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #fff;
-        }
-
-        .field input:focus {
-            border-color: #14B8A6;
-            box-shadow: 0 0 0 2.5px rgba(20, 184, 166, 0.15);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
 
         .field input::placeholder {
-            color: #d1d5db;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .field input:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(20,184,166,0.1);
+            background: var(--card);
         }
 
         .field .error {
-            font-size: 11px;
-            color: #b91c1c;
-            margin-top: 4px;
+            font-size: 11.5px;
+            color: var(--error-text);
+            margin-top: 5px;
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        .grid {
+        .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
 
         .divider {
-            height: 0.5px;
-            background: rgba(0, 0, 0, 0.06);
-            margin: 20px 0;
+            height: 1px;
+            background: var(--divider);
+            margin: 24px 0;
         }
 
-        /* Button */
-        .btn {
+        .alert-error {
+            background: var(--error-bg);
+            color: var(--error-text);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(190,18,60,0.15);
+        }
+
+        .btn-submit {
             width: 100%;
-            padding: 14px;
-            background: #14B8A6;
+            padding: 13px 20px;
+            background: var(--teal);
             color: #fff;
             font-size: 14px;
             font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
             border: none;
-            border-radius: 11px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-top: 8px;
+            margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: background 0.15s, transform 0.1s;
             letter-spacing: 0.01em;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(20,184,166,0.3);
         }
 
-        .btn:hover {
-            background: #0f9e8e;
+        .btn-submit:hover {
+            background: var(--teal-dark);
+            box-shadow: 0 6px 20px rgba(20,184,166,0.4);
         }
 
-        .btn:active {
-            transform: scale(0.98);
+        .btn-submit:active {
+            transform: translateY(1px);
         }
 
-        .login-link {
+        .signin-link {
             text-align: center;
             margin-top: 20px;
             font-size: 13px;
-            color: #9ca3af;
+            color: var(--text-muted);
         }
 
-        .login-link a {
-            color: #14B8A6;
+        .signin-link a {
+            color: var(--teal);
             font-weight: 600;
             text-decoration: none;
         }
+
+        .signin-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 680px) {
+            .left-panel { display: none; }
+            .right-panel { padding: 36px 24px; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
-
 <body>
 
-    <div class="card">
+    <div class="wrapper">
 
-        <div class="logo">
-            <div class="logo-mark">
-                <span class="logo-name">Q<em>line</em></span>
+        <!-- Left panel -->
+        <div class="left-panel">
+            <div class="brand">
+                <div class="brand-logo">Q<em>line</em></div>
+                <div class="brand-tagline">WhatsApp Queue Management</div>
             </div>
-            <div class="logo-tagline">WhatsApp Queue Management</div>
+
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-text">
+                        <strong>WhatsApp-first</strong>
+                        <span>Customers join via WhatsApp — no app needed</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📺</div>
+                    <div class="feature-text">
+                        <strong>Live TV display</strong>
+                        <span>Show queue status on any screen in real-time</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">
+                        <strong>Instant notifications</strong>
+                        <span>Customers get notified when their turn is near</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">
+                        <strong>Analytics built-in</strong>
+                        <span>Track wait times, peak hours, and feedback</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="left-footer">© 2026 QLine · All rights reserved</div>
         </div>
 
-        <div class="page-title">Get started</div>
-        <div class="page-sub">Create your business account</div>
+        <!-- Right panel -->
+        <div class="right-panel">
 
-        @if ($errors->any())
-            <div class="alert-error">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#b91c1c" stroke-width="2"
-                    stroke-linecap="round">
-                    <circle cx="8" cy="8" r="6" />
-                    <path d="M8 5v3M8 11v.5" />
-                </svg>
-                {{ $errors->first() }}
+            <div class="form-header">
+                <h1>Create your account</h1>
+                <p>Set up your business queue in under 2 minutes</p>
             </div>
-        @endif
 
-        <form method="POST" action="{{ route('register.store') }}">
-            @csrf
+            @if($errors->any())
+                <div class="alert-error">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/>
+                    </svg>
+                    {{ $errors->first() }}
+                </div>
+            @endif
 
-            <div class="section-label">Your business</div>
+            <form method="POST" action="{{ route('register.store') }}">
+                @csrf
 
-            <div class="field">
-                <label>Business name</label>
-                <input type="text" name="business_name" value="{{ old('business_name') }}"
-                    placeholder="e.g. Klinik Ahmad" required />
-                @error('business_name')
-                    <div class="error">
-                        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round">
-                            <circle cx="8" cy="8" r="6" />
-                            <path d="M8 5v3M8 11v.5" />
-                        </svg>
-                        {{ $message }}
+                <div class="section-label">Your Business</div>
+
+                <div class="field">
+                    <label>Business Name</label>
+                    <input type="text" name="business_name" value="{{ old('business_name') }}" placeholder="e.g. Klinik Ahmad" required />
+                    @error('business_name')<div class="error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="field">
+                    <label>Business Phone</label>
+                    <input type="text" name="phone" value="{{ old('phone') }}" placeholder="e.g. 0123456789" />
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label>City</label>
+                        <input type="text" name="city" value="{{ old('city') }}" placeholder="Kuantan" />
                     </div>
-                @enderror
-            </div>
-
-            <div class="field">
-                <label>Business Phone</label>
-                <input type="text" name="phone" value="{{ old('phone') }}" placeholder="e.g. 0123456789" />
-            </div>
-
-            <div class="grid">
-                <div class="field">
-                    <label>City</label>
-                    <input type="text" name="city" value="{{ old('city') }}" placeholder="Kuantan" />
-                </div>
-                <div class="field">
-                    <label>State</label>
-                    <input type="text" name="state" value="{{ old('state') }}" placeholder="Pahang" />
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="section-label">Your account</div>
-
-            <div class="field">
-                <label>Full name</label>
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="Ahmad bin Ali" required />
-                @error('name')
-                    <div class="error">
-                        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round">
-                            <circle cx="8" cy="8" r="6" />
-                            <path d="M8 5v3M8 11v.5" />
-                        </svg>
-                        {{ $message }}
+                    <div class="field">
+                        <label>State</label>
+                        <input type="text" name="state" value="{{ old('state') }}" placeholder="Pahang" />
                     </div>
-                @enderror
-            </div>
+                </div>
 
-            <div class="field">
-                <label>Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="ahmad@example.com"
-                    required />
-                @error('email')
-                    <div class="error">
-                        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round">
-                            <circle cx="8" cy="8" r="6" />
-                            <path d="M8 5v3M8 11v.5" />
-                        </svg>
-                        {{ $message }}
+                <div class="divider"></div>
+
+                <div class="section-label">Your Account</div>
+
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="Ahmad bin Ali" required />
+                    @error('name')<div class="error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="field">
+                    <label>Email Address</label>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="ahmad@example.com" required />
+                    @error('email')<div class="error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Min 8 characters" required />
+                        @error('password')<div class="error">{{ $message }}</div>@enderror
                     </div>
-                @enderror
+                    <div class="field">
+                        <label>Confirm Password</label>
+                        <input type="password" name="password_confirmation" placeholder="Repeat password" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Create My Business
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 8h10M9 4l4 4-4 4"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="signin-link">
+                Already have an account? <a href="/business">Sign in</a>
             </div>
 
-            <div class="grid">
-                <div class="field">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="Min 8 characters" required />
-                    @error('password')
-                        <div class="error">
-                            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round">
-                                <circle cx="8" cy="8" r="6" />
-                                <path d="M8 5v3M8 11v.5" />
-                            </svg>
-                            {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-                <div class="field">
-                    <label>Confirm password</label>
-                    <input type="password" name="password_confirmation" placeholder="Repeat password" required />
-                </div>
-            </div>
-
-            <button type="submit" class="btn">
-                Create my business
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="white"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 8h8M9 5l3 3-3 3" />
-                </svg>
-            </button>
-        </form>
-
-        <div class="login-link">
-            Already have an account? <a href="/business">Sign in</a>
         </div>
 
     </div>
 
 </body>
-
 </html>

@@ -277,6 +277,14 @@
                     <input wire:model="phone" type="text" placeholder="+60 12-345 6789" />
                 </div>
                 <div class="field">
+                    <label>POS CODE</label>
+                    <input wire:model="pos_code" type="number" placeholder="25000" />
+                </div>
+                <div class="field field-full">
+                    <label>ADDRESS</label>
+                    <input wire:model="address" type="text" placeholder="No 1, Jalan Contoh..." />
+                </div>
+                <div class="field">
                     <label>CITY</label>
                     <input wire:model="city" type="text" placeholder="Kuantan" />
                 </div>
@@ -284,10 +292,7 @@
                     <label>STATE</label>
                     <input wire:model="state" type="text" placeholder="Pahang" />
                 </div>
-                <div class="field field-full">
-                    <label>ADDRESS</label>
-                    <input wire:model="address" type="text" placeholder="No 1, Jalan Contoh..." />
-                </div>
+                
             </div>
 
             <button wire:click="saveBusinessDetails" class="settings-btn">
@@ -325,17 +330,17 @@
                 </div>
                 <div class="field">
                     <label>DAILY LIMIT</label>
-                    <input wire:model="daily_limit" type="number" min="1" max="1000" placeholder="100" />
-                    <span class="hint">Max 1000 entries/day</span>
+                    <input wire:model="daily_limit" type="number" min="1" max="500" placeholder="100" />
+                    <span class="hint">Max 500 entries/day</span>
                     @error('daily_limit')
                         <span style="color:#ef4444;font-size:11px;">{{ $message }}</span>
                     @enderror
                 </div>
                 <div class="field">
                     <label>NOTIFY BEFORE</label>
-                    <input wire:model="notify_turns_before" type="number" min="1" max="20"
+                    <input wire:model="notify_turns_before" type="number" min="1" max="5"
                         placeholder="3" />
-                    <span class="hint">Turns before their number</span>
+                    <span class="hint">Turns before their number/Max 5</span>
                     @error('notify_turns_before')
                         <span style="color:#ef4444;font-size:11px;">{{ $message }}</span>
                     @enderror

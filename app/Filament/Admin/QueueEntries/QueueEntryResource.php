@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Filament\Business\QueueEntries;
+namespace App\Filament\Admin\QueueEntries;
 
-use App\Filament\Business\QueueEntries\Pages\ListQueueEntries;
-use App\Filament\Business\QueueEntries\Schemas\QueueEntryForm;
-use App\Filament\Business\QueueEntries\Tables\QueueEntriesTable;
+use App\Filament\Admin\QueueEntries\Pages\ListQueueEntries;
+use App\Filament\Admin\QueueEntries\Pages\ViewQueueEntry;
+use App\Filament\Admin\QueueEntries\Schemas\QueueEntryForm;
+use App\Filament\Admin\QueueEntries\Tables\QueueEntriesTable;
 use App\Models\QueueEntry;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class QueueEntryResource extends Resource
 {
@@ -20,9 +19,9 @@ class QueueEntryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Queue';
+    protected static ?string $navigationLabel = 'Queue Entries';
 
-    protected static ?string $navigationLabel = 'Entries';
+    protected static string|\UnitEnum|null $navigationGroup = 'Logs';
 
     protected static ?int $navigationSort = 2;
 
@@ -31,23 +30,6 @@ class QueueEntryResource extends Resource
     public static function canCreate(): bool
     {
         return false;
-    }
-
-    public static function canEdit($record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete($record): bool
-    {
-        return false;
-    }
-
-    // Scope all queries to current business
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('business_id', Auth::user()->business_id);
     }
 
     public static function form(Schema $schema): Schema
@@ -69,6 +51,7 @@ class QueueEntryResource extends Resource
     {
         return [
             'index' => ListQueueEntries::route('/'),
+            'view'  => ViewQueueEntry::route('/{record}'),
         ];
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Filament\Admin\Subscriptions\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -24,6 +26,7 @@ class SubscriptionsTable
                     ->color(fn (string $state): string => match ($state) {
                         'daily'   => 'success',
                         'monthly' => 'info',
+                        default   => 'gray',
                     }),
                 TextColumn::make('status')
                     ->badge()
@@ -32,6 +35,7 @@ class SubscriptionsTable
                         'pending'   => 'warning',
                         'expired'   => 'danger',
                         'cancelled' => 'gray',
+                        default     => 'gray',
                     }),
                 TextColumn::make('starts_at')
                     ->date()
@@ -59,6 +63,26 @@ class SubscriptionsTable
                     ]),
             ])
             ->recordActions([
+                Action::make('activate')
+                    ->label('Activate')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => $record->status !== 'active')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'active']);
+                        Notification::make()->title('Subscription activated')->success()->send();
+                    }),
+                Action::make('deactivate')
+                    ->label('Deactivate')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => $record->status === 'active')
+                    ->action(function ($record) {
+                        $record->update(['status' => 'cancelled']);
+                        Notification::make()->title('Subscription deactivated')->success()->send();
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([

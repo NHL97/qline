@@ -17,7 +17,9 @@ class QueueDashboard extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQueueList;
 
-    protected static ?string $navigationLabel = 'Queue Dashboard';
+    protected static string|\UnitEnum|null $navigationGroup = 'Queue';
+
+    protected static ?string $navigationLabel = 'Dashboard';
 
     protected static ?int $navigationSort = 1;
 

@@ -356,7 +356,8 @@
             <div class="powered">Powered by <span class="f-logo">Q<em>Line</em></span></div>
             <div class="biz-name">{{ $business->name }}</div>
             @if ($business->city)
-                <div class="location">{{ $business->city }}, {{ $business->state }}</div>
+                <div class="location">{{ $business->address }},{{ $business->postcode }},{{ $business->city }},
+                    {{ $business->state }}</div>
             @endif
         </div>
 

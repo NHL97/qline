@@ -22,6 +22,7 @@ class BusinessSeeder extends Seeder
             'join_code'           => 'WARUNG-AHMAD',
             'phone'               => '0123456789',
             'address'             => 'No 12 Jalan Mawar',
+            'postcode'            => '12345',
             'city'                => 'Temerluh',
             'state'               => 'Pahang',
             'is_active'           => true,

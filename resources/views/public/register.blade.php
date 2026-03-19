@@ -434,6 +434,11 @@
                     <input type="text" name="phone" value="{{ old('phone') }}" placeholder="e.g. 0123456789" />
                 </div>
 
+                <div class="field">
+                    <label>Post Code</label>
+                    <input type="text" name="postcode" value="{{ old('postcode') }}" placeholder="e.g. 25000" />
+                </div>
+
                 <div class="grid-2">
                     <div class="field">
                         <label>City</label>

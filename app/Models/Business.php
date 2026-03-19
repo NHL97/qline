@@ -20,6 +20,7 @@ class Business extends Model
         'join_code',
         'phone',
         'address',
+        'postcode',
         'city',
         'state',
         'is_active',

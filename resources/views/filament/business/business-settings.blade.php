@@ -277,8 +277,8 @@
                     <input wire:model="phone" type="text" placeholder="+60 12-345 6789" />
                 </div>
                 <div class="field">
-                    <label>POS CODE</label>
-                    <input wire:model="pos_code" type="number" placeholder="25000" />
+                    <label>POST CODE</label>
+                    <input wire:model="postcode" type="number" placeholder="25000" />
                 </div>
                 <div class="field field-full">
                     <label>ADDRESS</label>

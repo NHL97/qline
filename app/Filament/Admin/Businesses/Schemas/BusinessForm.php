@@ -59,6 +59,9 @@ class BusinessForm
                         TextInput::make('address')
                             ->nullable()
                             ->columnSpanFull(),
+                        TextInput::make('postcode')
+                            ->nullable()
+                            ->maxLength(6),
                         TextInput::make('city')
                             ->nullable(),
                         TextInput::make('state')

@@ -19,6 +19,7 @@ return new class extends Migration
         $table->string('join_code')->unique();
         $table->string('phone')->nullable();
         $table->string('address')->nullable();
+        $table->string('postcode', 6)->nullable();
         $table->string('city')->nullable();
         $table->string('state')->nullable();
         $table->boolean('is_active')->default(true);

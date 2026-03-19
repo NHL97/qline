@@ -120,8 +120,8 @@
         }
         .cancel-btn:hover { background: rgba(239,68,68,0.13); }
 
-        .powered { font-size: 11px; color: #d1d5db; }
-        .powered span { color: #14B8A6; font-weight: 600; }
+        .powered { font-size: 12px; color: #d1d5db; }
+        .powered a { color: #14B8A6; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -216,7 +216,7 @@
             </form>
         @endif
 
-        <div class="powered">Powered by <span>QLine</span></div>
+        <div class="powered">Powered by <a href="{{ route('home') }}" style="text-decoration: none;">Qline</a></div>
     </div>
 
     <script>

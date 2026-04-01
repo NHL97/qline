@@ -2,8 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\Business;
-use App\Models\QueueEntry;
 use App\Models\WhatsappMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +16,10 @@ class SendWhatsAppMessage implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
-    public int $backoff = 10;
+
+    public int $backoff = 30; // seconds between retries
+
+    public int $timeout = 30;
 
     public function __construct(
         public string $waId,
@@ -31,27 +32,28 @@ class SendWhatsAppMessage implements ShouldQueue
     public function handle(): void
     {
         $phoneNumberId = config('qline.meta.phone_number_id');
-        $accessToken   = config('qline.meta.access_token');
-        $apiVersion    = config('qline.meta.api_version');
+        $accessToken = config('qline.meta.access_token');
+        $apiVersion = config('qline.meta.api_version');
 
         if (empty($accessToken) || empty($phoneNumberId)) {
             Log::warning('WhatsApp not configured — skipping message', [
                 'template' => $this->template,
-                'wa_id'    => $this->waId,
+                'wa_id' => $this->waId,
             ]);
+
             return;
         }
 
         $payload = [
             'messaging_product' => 'whatsapp',
-            'to'                => $this->waId,
-            'type'              => 'template',
-            'template'          => [
-                'name'     => $this->template,
+            'to' => $this->waId,
+            'type' => 'template',
+            'template' => [
+                'name' => $this->template,
                 'language' => ['code' => 'en'],
                 'components' => [
                     [
-                        'type'       => 'body',
+                        'type' => 'body',
                         'parameters' => collect($this->variables)->map(fn ($v) => [
                             'type' => 'text',
                             'text' => (string) $v,
@@ -68,23 +70,32 @@ class SendWhatsAppMessage implements ShouldQueue
 
         // Log the message
         WhatsappMessage::create([
-            'business_id'    => $this->businessId,
+            'business_id' => $this->businessId,
             'queue_entry_id' => $this->queueEntryId,
-            'wa_id'          => $this->waId,
-            'direction'      => 'outbound',
-            'template'       => $this->template,
-            'message_id'     => $messageId,
-            'status'         => $response->successful() ? 'sent' : 'failed',
-            'payload'        => $response->json(),
+            'wa_id' => $this->waId,
+            'direction' => 'outbound',
+            'template' => $this->template,
+            'message_id' => $messageId,
+            'status' => $response->successful() ? 'sent' : 'failed',
+            'payload' => $response->json(),
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             Log::error('WhatsApp send failed', [
                 'template' => $this->template,
-                'wa_id'    => $this->waId,
+                'wa_id' => $this->waId,
                 'response' => $response->json(),
             ]);
-            $this->fail('WhatsApp API error: ' . $response->body());
+            $this->fail('WhatsApp API error: '.$response->body());
         }
+    }
+
+    public function failed(\Throwable $e): void
+    {
+        Log::error('SendWhatsAppMessage permanently failed', [
+            'template' => $this->template,
+            'wa_id' => $this->waId,
+            'error' => $e->getMessage(),
+        ]);
     }
 }

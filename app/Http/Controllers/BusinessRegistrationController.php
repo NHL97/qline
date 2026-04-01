@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\User;
+use App\Services\QRCodeGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -75,6 +76,9 @@ class BusinessRegistrationController extends Controller
 
             // Link user to business
             $user->update(['business_id' => $business->id]);
+
+            // Auto-generate QR code
+            app(QRCodeGeneratorService::class)->generateForBusiness($business);
 
             Auth::login($user);
         });

@@ -24,51 +24,84 @@ class ProcessQueueJoin implements ShouldQueue
     ) {}
 
     public function handle(QueueService $queueService): void
-    {
-        // Find business by join code
-        $business = Business::where('join_code', strtoupper(trim($this->joinCode)))
-            ->where('is_active', true)
-            ->first();
+{
+    $business = Business::where('join_code', strtoupper(trim($this->joinCode)))
+        ->where('is_active', true)
+        ->first();
 
-        if (! $business) {
-            Log::warning('ProcessQueueJoin: business not found', ['join_code' => $this->joinCode]);
-
-            // TODO: send WA reply "Business not found"
-            return;
-        }
-
-        try {
-            $entry = $queueService->join($business, $this->waId);
-
-            // Build status page URL
-            $statusUrl = route('public.status', [
-                'slug' => $business->slug,
-                'entryId' => $entry->id,
-                'token' => $entry->cancel_token,
-            ]);
-
-            // Calculate position info
-            $positionInfo = $queueService->getPositionInfo($entry);
-
-            // Send queue_joined WA message
-            SendWhatsAppMessage::dispatch(
-                $this->waId,
-                'queue_joined',
-                [
-                    $entry->ticket_code,                    // {{1}} ticket
-                    $business->name,                        // {{2}} business
-                    $positionInfo['ahead'],                 // {{3}} people ahead
-                    $positionInfo['estimated_wait'],        // {{4}} estimated wait
-                    $statusUrl,                             // {{5}} status URL
-                ],
-                $business->id,
-                $entry->id,
-            );
-
-        } catch (\RuntimeException $e) {
-            $this->handleError($e->getMessage(), $business);
-        }
+    if (!$business) {
+        Log::warning('ProcessQueueJoin: business not found', ['join_code' => $this->joinCode]);
+        return;
     }
+
+    // ── Rate limiting — max 3 joins per wa_id per day ─────────────
+    $todayJoins = \App\Models\QueueEntry::where('wa_id', $this->waId)
+        ->where('business_id', $business->id)
+        ->whereDate('joined_at', today())
+        ->count();
+
+    if ($todayJoins >= 3) {
+        Log::warning('ProcessQueueJoin: rate limit hit', ['wa_id' => $this->waId]);
+        return;
+    }
+
+    // ── Max 1 active entry per wa_id per business ─────────────────
+    $activeEntry = \App\Models\QueueEntry::where('wa_id', $this->waId)
+        ->where('business_id', $business->id)
+        ->whereIn('status', ['waiting', 'called', 'serving'])
+        ->first();
+
+    if ($activeEntry) {
+        Log::info('ProcessQueueJoin: already in queue', ['wa_id' => $this->waId]);
+        // Send reminder with their existing ticket
+        SendWhatsAppMessage::dispatch(
+            $this->waId,
+            'queue_joined',
+            [
+                $activeEntry->ticket_code,
+                $business->name,
+                $activeEntry->position - 1,
+                ($activeEntry->position - 1) * $business->avgServiceMinutes(),
+                route('public.status', [
+                    'slug'    => $business->slug,
+                    'entryId' => $activeEntry->id,
+                    'token'   => $activeEntry->cancel_token,
+                ]),
+            ],
+            $business->id,
+            $activeEntry->id,
+        );
+        return;
+    }
+
+    try {
+        $entry = $queueService->join($business, $this->waId);
+
+        $statusUrl    = route('public.status', [
+            'slug'    => $business->slug,
+            'entryId' => $entry->id,
+            'token'   => $entry->cancel_token,
+        ]);
+        $positionInfo = $queueService->getPositionInfo($entry);
+
+        SendWhatsAppMessage::dispatch(
+            $this->waId,
+            'queue_joined',
+            [
+                $entry->ticket_code,
+                $business->name,
+                $positionInfo['ahead'],
+                $positionInfo['estimated_wait'],
+                $statusUrl,
+            ],
+            $business->id,
+            $entry->id,
+        );
+
+    } catch (\RuntimeException $e) {
+        $this->handleError($e->getMessage(), $business);
+    }
+}
 
     private function handleError(string $reason, Business $business): void
     {

@@ -4,15 +4,12 @@ namespace App\Filament\Business;
 
 use App\Models\Business;
 use App\Models\QrCode;
+use App\Services\QRCodeGeneratorService;
 use BackedEnum;
-use chillerlan\QRCode\Output\QROutputInterface;
-use chillerlan\QRCode\QRCode as QRCodeGenerator;
-use chillerlan\QRCode\QROptions;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class BusinessSettings extends Page
 {
@@ -37,7 +34,7 @@ class BusinessSettings extends Page
     public string $phone = '';
 
     public string $address = '';
-    
+
     public string $postcode = '';
 
     public string $city = '';
@@ -120,47 +117,20 @@ class BusinessSettings extends Page
 
     public function generate(): void
     {
-        $business = Auth::user()->business()->firstOrFail(); // fresh query, no cache
+        $business = Auth::user()->business()->firstOrFail();
 
         $waNumber = config('qline.wa_number');
         $newUrl = "https://wa.me/{$waNumber}?text=JOIN%20{$business->join_code}";
 
-        // Check if URL has changed
         $existing = QrCode::where('business_id', $business->id)->first();
         if ($existing && $existing->url === $newUrl) {
-            Notification::make()
-                ->title('QR code is already up to date')
-                ->body('The join code has not changed.')
-                ->warning()
-                ->send();
+            Notification::make()->title('QR code is already up to date')->warning()->send();
 
             return;
         }
 
-        $options = new QROptions([
-            'outputType' => QROutputInterface::GDIMAGE_PNG,
-            'eccLevel' => QRCodeGenerator::ECC_H,
-            'scale' => 10,
-            'imageBase64' => false,
-        ]);
-
-        $qrcode = new QRCodeGenerator($options);
-        $imgData = $qrcode->render($newUrl);
-
-        $filename = 'qrcodes/'.$business->slug.'.png';
-        Storage::disk('public')->put($filename, $imgData);
-
-        $this->qrCode = QrCode::updateOrCreate(
-            ['business_id' => $business->id],
-            [
-                'label' => $business->name,
-                'url' => $newUrl,
-                'image_path' => 'public/'.$filename,
-                'is_active' => true,
-            ]
-        );
-
-        $this->qrImageUrl = asset('storage/'.$filename);
+        $this->qrCode = app(QRCodeGeneratorService::class)->generateForBusiness($business);
+        $this->qrImageUrl = asset('storage/qrcodes/'.$business->slug.'.png');
 
         Notification::make()->title('QR Code generated')->success()->send();
     }

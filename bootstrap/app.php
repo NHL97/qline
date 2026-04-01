@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckBusinessSubscription;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'webhook/whatsapp',
             'payment/callback',
         ]);
+        $middleware->appendToGroup('web', CheckBusinessSubscription::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

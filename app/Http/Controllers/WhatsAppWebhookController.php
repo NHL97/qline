@@ -61,43 +61,48 @@ class WhatsAppWebhookController extends Controller
     }
 
     private function handleInboundMessage(array $message, array $value): void
-    {
-        $waId = data_get($message, 'from');
-        $type = data_get($message, 'type');
-        $body = data_get($message, 'text.body', '');
+{
+    $waId      = data_get($message, 'from');
+    $body      = data_get($message, 'text.body', '');
+    $messageId = data_get($message, 'id');
 
-        Log::info('WhatsApp inbound', ['wa_id' => $waId, 'body' => $body]);
-
-        // Log inbound message
-        WhatsappMessage::create([
-            'business_id' => null, // resolved in job
-            'queue_entry_id' => null,
-            'wa_id' => $waId,
-            'direction' => 'inbound',
-            'body' => $body,
-            'message_id' => data_get($message, 'id'),
-            'status' => 'delivered',
-            'payload' => $value,
-        ]);
-
-        // Check if message starts with JOIN
-        if (strtoupper(substr(trim($body), 0, 4)) === 'JOIN') {
-            $parts = explode(' ', trim($body), 2);
-            $joinCode = strtoupper(trim($parts[1] ?? ''));
-
-            if (! empty($joinCode)) {
-                ProcessQueueJoin::dispatch($waId, $joinCode, $value);
-            }
-        }
-
-        // Check if message is a rating reply (1-5)
-        if (is_numeric(trim($body)) && in_array((int) trim($body), [1, 2, 3, 4, 5])) {
-            $this->handleFeedback($waId, (int) trim($body));
-
-            return;
-        }
-
+    // ── Idempotency check — Meta WILL resend webhooks ─────────────
+    if ($messageId && WhatsappMessage::where('message_id', $messageId)->exists()) {
+        Log::info('WhatsApp duplicate webhook ignored', ['message_id' => $messageId]);
+        return;
     }
+
+    Log::info('WhatsApp inbound', ['wa_id' => $waId, 'body' => $body, 'message_id' => $messageId]);
+
+    // Log inbound message
+    WhatsappMessage::create([
+        'business_id'    => null,
+        'queue_entry_id' => null,
+        'wa_id'          => $waId,
+        'direction'      => 'inbound',
+        'body'           => $body,
+        'message_id'     => $messageId,
+        'status'         => 'delivered',
+        'payload'        => $value,
+    ]);
+
+    // ── Rating reply (1-5) ────────────────────────────────────────
+    if (is_numeric(trim($body)) && in_array((int) trim($body), [1, 2, 3, 4, 5])) {
+        $this->handleFeedback($waId, (int) trim($body));
+        return;
+    }
+
+    // ── JOIN command ──────────────────────────────────────────────
+    if (strtoupper(substr(trim($body), 0, 4)) === 'JOIN') {
+        $parts    = explode(' ', trim($body), 2);
+        $joinCode = strtoupper(trim($parts[1] ?? ''));
+
+        if (!empty($joinCode)) {
+            ProcessQueueJoin::dispatch($waId, $joinCode, $value);
+        }
+        return;
+    }
+}
 
     private function handleStatusUpdate(array $status): void
     {

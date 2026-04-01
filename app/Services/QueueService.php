@@ -7,6 +7,7 @@ use App\Jobs\SendWhatsAppMessage;
 use App\Models\Business;
 use App\Models\QueueEntry;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class QueueService
 {
@@ -74,7 +75,7 @@ class QueueService
                 'source' => 'whatsapp',
                 'position' => $position,
                 'joined_at' => now(),
-                'cancel_token' => \Illuminate\Support\Str::random(32),
+                'cancel_token' => Str::random(32),
             ]);
 
             // Increment entries today
@@ -116,7 +117,7 @@ class QueueService
                 'source' => 'manual',
                 'position' => $position,
                 'joined_at' => now(),
-                'cancel_token' => \Illuminate\Support\Str::random(32),
+                'cancel_token' => Str::random(32),
             ]);
 
             $business->increment('entries_today');
@@ -136,9 +137,11 @@ class QueueService
     {
         return DB::transaction(function () use ($business) {
 
+            // SELECT FOR UPDATE — prevents two staff calling same ticket
             $next = QueueEntry::where('business_id', $business->id)
                 ->where('status', 'waiting')
                 ->orderBy('position')
+                ->lockForUpdate()
                 ->first();
 
             if (! $next) {
@@ -150,27 +153,22 @@ class QueueService
                 'called_at' => now(),
             ]);
 
-            // Send now_serving WA if customer has WhatsApp
             if ($next->wa_id) {
                 SendWhatsAppMessage::dispatch(
                     $next->wa_id,
                     'now_serving',
-                    [
-                        $next->ticket_code,     // {{1}} ticket
-                        $business->name,        // {{2}} business
-                    ],
+                    [$next->ticket_code, $business->name],
                     $business->id,
                     $next->id,
                 );
             }
 
-            // Check if anyone needs turn_approaching notification
+            $this->recalculatePositions($business->id);
             $this->checkApproaching($business);
             $this->broadcastUpdate($business);
 
             return $next->fresh();
         });
-    
     }
 
     // ── Mark Serving ──────────────────────────────────────────────

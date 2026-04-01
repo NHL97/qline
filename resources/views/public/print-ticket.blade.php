@@ -236,7 +236,7 @@
     <div class="ticket">
 
         <div class="ticket-header">
-            <div class="powered">Powered by <span class="f-logo">Q<em>Line</em></span></div>
+            <div class="powered">Powered by <span class="f-logo">Q<em>line</em></span></div>
             <div class="ticket-biz">{{ $entry->business->name }}</div>
             @if ($entry->business->city)
                 <div class="ticket-loc">{{ $entry->business->city }}, {{ $entry->business->state }}</div>

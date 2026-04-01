@@ -256,12 +256,19 @@ class QueueService
     // ── Open Queue ────────────────────────────────────────────────
     public function openQueue(Business $business): void
     {
-        if ($business->needsReset()) {
-            $business->resetQueue();
-        } else {
+        // Check subscription before allowing open
+        if (! $business->hasActiveSubscription()) {
+            throw new \RuntimeException('subscription_inactive');
+        }
+
+        DB::transaction(function () use ($business) {
+            if ($business->needsReset()) {
+                $business->resetQueue();
+            }
+
             $business->update(['queue_status' => 'open']);
             $this->broadcastUpdate($business);
-        }
+        });
     }
 
     // ── Pause Queue ───────────────────────────────────────────────

@@ -60,9 +60,18 @@ class QueueDashboard extends Page
     // ── Queue Status Actions ──────────────────────────────────────
     public function openQueue(): void
     {
-        app(QueueService::class)->openQueue($this->business);
-        $this->business->refresh();
-        Notification::make()->title('Queue opened')->success()->send();
+        try {
+            app(QueueService::class)->openQueue($this->business);
+            $this->loadCurrent();
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'subscription_inactive') {
+                Notification::make()
+                    ->title('No active subscription')
+                    ->body('Please subscribe before opening the queue.')
+                    ->danger()
+                    ->send();
+            }
+        }
     }
 
     public function pauseQueue(): void
@@ -117,19 +126,19 @@ class QueueDashboard extends Page
     }
 
     public function addManual(): void
-{
-    try {
-        $entry = app(QueueService::class)->addManual($this->business);
-        $this->loadCurrent();
-        Notification::make()->title("Added {$entry->ticket_code} (anonymous)")->success()->send();
+    {
+        try {
+            $entry = app(QueueService::class)->addManual($this->business);
+            $this->loadCurrent();
+            Notification::make()->title("Added {$entry->ticket_code} (anonymous)")->success()->send();
 
-        // Open print ticket in new tab
-        $this->js("window.open('" . route('print.ticket', $entry->id) . "', '_blank')");
+            // Open print ticket in new tab
+            $this->js("window.open('".route('print.ticket', $entry->id)."', '_blank')");
 
-    } catch (\RuntimeException $e) {
-        Notification::make()->title('Cannot add entry: '.$e->getMessage())->danger()->send();
+        } catch (\RuntimeException $e) {
+            Notification::make()->title('Cannot add entry: '.$e->getMessage())->danger()->send();
+        }
     }
-}
 
     // ── Computed Properties ───────────────────────────────────────
     public function getWaitingCountProperty(): int

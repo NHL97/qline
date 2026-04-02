@@ -41,7 +41,7 @@ class ProcessQueueJoin implements ShouldQueue
         ->count();
 
     if ($todayJoins >= 3) {
-        Log::warning('ProcessQueueJoin: rate limit hit', ['wa_id' => $this->waId]);
+        QLineLogger::waRateLimited($this->waId, $business->id);
         return;
     }
 

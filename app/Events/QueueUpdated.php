@@ -21,6 +21,7 @@ class QueueUpdated implements ShouldBroadcastNow
         public int $waitingCount,
         public string $queueStatus,
         public int $entriesToday,
+        public ?string $pauseReason = null,
     ) {}
 
     public function broadcastOn(): array
@@ -42,6 +43,7 @@ class QueueUpdated implements ShouldBroadcastNow
             'waiting_count'  => $this->waitingCount,
             'queue_status'   => $this->queueStatus,
             'entries_today'  => $this->entriesToday,
+            'pause_reason'   => $this->pauseReason,
         ];
     }
 }

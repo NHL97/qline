@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\BusinessScope;
 
 class CustomerFeedback extends Model
 {
@@ -28,4 +29,11 @@ class CustomerFeedback extends Model
     {
         return $this->belongsTo(QueueEntry::class);
     }
+
+    
+
+protected static function booted(): void
+{
+    static::addGlobalScope(new BusinessScope());
+}
 }

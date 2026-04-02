@@ -81,6 +81,7 @@ class BusinessRegistrationController extends Controller
             app(QRCodeGeneratorService::class)->generateForBusiness($business);
 
             Auth::login($user);
+            QLineLogger::businessRegistered($business->id, $business->name, $user->email);
         });
 
         return redirect('/business');

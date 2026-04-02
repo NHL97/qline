@@ -127,6 +127,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'qline' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/qline.log'),
+            'level' => 'debug',
+            'days' => 14,
+        ],
+
     ],
 
 ];

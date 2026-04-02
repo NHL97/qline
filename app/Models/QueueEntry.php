@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Scopes\BusinessScope;
 
 class QueueEntry extends Model
 {
@@ -88,5 +89,12 @@ class QueueEntry extends Model
     public function feedback(): HasOne
     {
         return $this->hasOne(CustomerFeedback::class, 'queue_entry_id');
+    }
+
+   
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new BusinessScope);
     }
 }

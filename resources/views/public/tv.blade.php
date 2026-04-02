@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400..800&display=swap" rel="stylesheet">
     <title>{{ $business->name }} — Queue Display</title>
     @vite(['resources/js/app.js'])
+
     <style>
         * {
             margin: 0;
@@ -26,14 +27,17 @@
             overflow: hidden;
         }
 
-        /* Header */
+        body.flash {
+            background: #1e3a3a;
+            transition: background 0.2s ease;
+        }
+
         .hdr {
             padding: 18px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            flex-shrink: 0;
         }
 
         .hdr-left {
@@ -45,8 +49,6 @@
         .hdr-biz {
             font-size: 20px;
             font-weight: 700;
-            color: #fff;
-            letter-spacing: -0.3px;
         }
 
         .status-pill {
@@ -57,7 +59,6 @@
             border-radius: 999px;
             font-size: 12px;
             font-weight: 700;
-            letter-spacing: 0.04em;
         }
 
         .pill-dot {
@@ -68,7 +69,7 @@
         }
 
         .pill-open {
-            background: rgba(20, 184, 166, 0.15);
+            background: rgba(20, 184, 166, .15);
             color: #14B8A6;
         }
 
@@ -77,7 +78,7 @@
         }
 
         .pill-paused {
-            background: rgba(234, 179, 8, 0.15);
+            background: rgba(234, 179, 8, .15);
             color: #fbbf24;
         }
 
@@ -86,7 +87,7 @@
         }
 
         .pill-closed {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, .15);
             color: #f87171;
         }
 
@@ -94,73 +95,36 @@
             background: #ef4444;
         }
 
-        .hdr-right {
-            text-align: right;
-        }
-
         .hdr-time {
             font-size: 28px;
             font-weight: 700;
-            color: #fff;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -1px;
-            line-height: 1;
+            text-align: right;
         }
 
         .hdr-date {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.35);
-            margin-top: 3px;
+            color: rgba(255, 255, 255, .4);
+            text-align: right;
         }
 
-        /* Main grid */
         .main {
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            overflow: hidden;
         }
 
-        /* Now serving */
         .now-serving {
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 60px;
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .now-serving::before {
-            content: '';
-            position: absolute;
-            top: -80px;
-            left: -80px;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: rgba(20, 184, 166, 0.04);
-        }
-
-        .now-serving::after {
-            content: '';
-            position: absolute;
-            bottom: -60px;
-            right: -60px;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: rgba(20, 184, 166, 0.03);
+            align-items: center;
+            border-right: 1px solid rgba(255, 255, 255, .06);
         }
 
         .ns-label {
             font-size: 11px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.3);
             letter-spacing: 5px;
-            text-transform: uppercase;
+            color: rgba(255, 255, 255, .3);
             margin-bottom: 20px;
         }
 
@@ -168,146 +132,99 @@
             font-size: 140px;
             font-weight: 700;
             color: #14B8A6;
-            line-height: 1;
             font-family: monospace;
-            letter-spacing: -6px;
+            transition: all 0.3s ease;
         }
 
         .ns-empty {
             font-size: 80px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.08);
-            font-family: monospace;
+            color: rgba(255, 255, 255, .1);
         }
 
         .ns-empty-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.2);
-            margin-top: 12px;
+            color: rgba(255, 255, 255, .2);
+            margin-top: 10px;
         }
 
-        /* Waiting list */
         .waiting {
-            padding: 32px 36px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         .waiting-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .waiting-title {
             font-size: 11px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.3);
             letter-spacing: 5px;
-            text-transform: uppercase;
+            color: rgba(255, 255, 255, .3);
         }
 
         .waiting-count {
-            font-size: 12px;
-            font-weight: 700;
             color: #14B8A6;
-            background: rgba(20, 184, 166, 0.1);
-            padding: 3px 10px;
-            border-radius: 999px;
+            font-weight: 700;
         }
 
         .waiting-item {
             display: flex;
-            align-items: center;
             gap: 20px;
-            padding: 14px 0;
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+            animation: fadeIn 0.3s ease;
         }
 
-        .waiting-item:last-child {
-            border-bottom: none;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .waiting-pos {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.2);
-            font-weight: 600;
-            width: 24px;
-            flex-shrink: 0;
+        .waiting-item.is-next {
+            background: rgba(20, 184, 166, .05);
+            border-radius: 8px;
+            padding-left: 10px;
         }
 
         .waiting-code {
-            font-size: 32px;
-            font-weight: 700;
-            color: #e2e8f0;
+            font-size: 30px;
             font-family: monospace;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-
-        .waiting-item.is-next .waiting-code {
-            color: #14B8A6;
         }
 
         .next-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 2px 8px;
-            border-radius: 999px;
             font-size: 10px;
-            font-weight: 700;
-            background: rgba(20, 184, 166, 0.15);
             color: #14B8A6;
-            margin-left: 8px;
         }
 
-        .waiting-empty {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        /* Footer */
         .footer {
-            padding: 12px 40px;
+            padding: 10px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            flex-shrink: 0;
+            border-top: 1px solid rgba(255, 255, 255, .05);
         }
 
-        .footer-left {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.25);
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        #audio-status {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .3);
         }
 
-        .footer-served {
+        .footer b {
+            font-size: 14px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .footer-brand {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.2);
-            
-        }
-
-        .footer-brand span {
             color: #14B8A6;
             font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 1rem;
         }
-        .footer-brand span em {
-            font-style: normal;
-            color: #ffffff;
-        }
+
     </style>
 </head>
 
@@ -317,71 +234,70 @@
         <div class="hdr-left">
             <span class="hdr-biz">{{ $business->name }}</span>
 
-            @php
-                $pillClass = match ($business->queue_status) {
-                    'open' => 'pill-open',
-                    'paused' => 'pill-paused',
-                    default => 'pill-closed',
-                };
-                $dotClass = match ($business->queue_status) {
-                    'open' => 'dot-open',
-                    'paused' => 'dot-paused',
-                    default => 'dot-closed',
-                };
-                $statusLabel = match ($business->queue_status) {
-                    'open' => 'OPEN',
-                    'paused' => 'PAUSED',
-                    default => 'CLOSED',
-                };
-            @endphp
-
-            <span id="status-badge" class="status-pill {{ $pillClass }}">
-                <span class="pill-dot {{ $dotClass }}"></span>
-                {{ $statusLabel }}
+            <span id="status-badge" class="status-pill pill-{{ $business->queue_status }}">
+                <span class="pill-dot dot-{{ $business->queue_status }}"></span>
+                {{ strtoupper($business->queue_status) }}
+                @if($business->queue_status === 'paused' && $business->pause_reason)
+                    — {{ $business->pause_reason }}
+                @endif
             </span>
         </div>
-        <div class="hdr-right">
-            <div class="hdr-time" id="clock"></div>
-            <div class="hdr-date" id="date"></div>
+
+        <div>
+            <div id="clock" class="hdr-time"></div>
+            <div id="date" class="hdr-date"></div>
         </div>
     </div>
 
     <div class="main">
+
         <div class="now-serving">
-            <div class="ns-label">Now serving</div>
+            <div class="ns-label">NOW SERVING</div>
+
             @if ($current)
-                <div class="ns-ticket" id="current-ticket">{{ $current->ticket_code }}</div>
+                <div id="current-ticket" class="ns-ticket">{{ $current->ticket_code }}</div>
+                <div id="current-label"></div>
             @else
-                <div class="ns-empty" id="current-ticket">—</div>
-                <div class="ns-empty-label" id="current-label">No one is being served</div>
+                <div id="current-ticket" class="ns-empty">—</div>
+                <div id="current-label" class="ns-empty-label">No one is being served</div>
             @endif
         </div>
 
-        <div id="waiting-list">
-            @forelse($next as $index => $entry)
-                <div class="waiting-item {{ $index === 0 ? 'is-next' : '' }}">
-                    <span class="waiting-pos">{{ $index + 1 }}</span>
-                    <span class="waiting-code">{{ $entry->ticket_code }}</span>
-                    @if ($index === 0)
-                        <span class="next-badge">Next</span>
-                    @endif
-                </div>
-            @empty
-                <div class="waiting-empty">Queue is empty</div>
-            @endforelse
+        <div class="waiting">
+
+            <div class="waiting-header">
+                <div class="waiting-title">WAITING</div>
+                <div id="waiting-count" class="waiting-count">{{ count($next) }}</div>
+            </div>
+
+            <div id="waiting-list">
+                @forelse($next as $index => $entry)
+                    <div class="waiting-item {{ $index === 0 ? 'is-next' : '' }}">
+                        <span>{{ $index + 1 }}</span>
+                        <span class="waiting-code">{{ $entry->ticket_code }}</span>
+                        @if ($index === 0)
+                            <span class="next-badge">Next</span>
+                        @endif
+                    </div>
+                @empty
+                    <div>Queue is empty</div>
+                @endforelse
+            </div>
+
         </div>
-    </div>
+
     </div>
 
     <div class="footer">
-        <div class="footer-left">
-            <span class="footer-served" id="served-count">{{ $business->entries_today }}</span>
-            served today
-        </div>
-        <div class="footer-brand">Powered by <span>Q<em>line.my</em></span></div>
+        <div><span id="served-count">{{ $business->entries_today }}</span> served today</div>
+        <div id="audio-status">🔇 Click anywhere to enable sound</div>
+        <div>Powered by <b>Q<em>line.my</em></b></div>
     </div>
 
+    <audio id="ding-sound" src="/ding.mp3" preload="auto"></audio>
+
     <script>
+        // ─── CLOCK ───────────────────────────────────────────────────────────────
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-MY', {
@@ -398,73 +314,118 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const interval = setInterval(function() {
-                if (window.Echo) {
-                    clearInterval(interval);
+        // ─── AUDIO UNLOCK ─────────────────────────────────────────────────────────
+        // Browsers block autoplay until user interacts with the page.
+        // One click anywhere unlocks audio for the rest of the session.
+        document.addEventListener('click', () => {
+            const audio = document.getElementById('ding-sound');
+            if (audio) {
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    document.getElementById('audio-status').textContent = '🔊 Sound enabled';
+                }).catch(() => {
+                    document.getElementById('audio-status').textContent = '🔇 Sound unavailable';
+                });
+            }
+        }, { once: true });
 
-                    window.Echo.channel('queue.{{ $business->slug }}')
-                        .listen('.queue.updated', (data) => {
+        function playSound() {
+            const audio = document.getElementById('ding-sound');
+            if (audio) audio.play().catch(() => {});
+        }
 
-                            // Update now serving
-                            const ticketEl = document.getElementById('current-ticket');
-                            const labelEl = document.getElementById('current-label');
+        // ─── LAST TICKET (seeded from server to avoid false ding on first update) ─
+        let lastTicket = @json($current?->ticket_code);
 
-                            if (data.current_ticket) {
-                                ticketEl.textContent = data.current_ticket;
-                                ticketEl.className = 'ns-ticket';
+        // ─── UPDATE UI (called on every Echo event) ───────────────────────────────
+        function updateUI(data) {
+            // NOW SERVING
+            const ticketEl = document.getElementById('current-ticket');
+            const labelEl  = document.getElementById('current-label');
 
-                                labelEl.textContent = '';
-                            } else {
-                                ticketEl.textContent = '—';
-                                ticketEl.className = 'ns-empty';
-
-                                labelEl.textContent = 'No one is being served';
-                            }
-
-                            // Update status badge
-                            const badge = document.getElementById('status-badge');
-                            const pillMap = {
-                                open: 'pill-open',
-                                paused: 'pill-paused',
-                                closed: 'pill-closed'
-                            };
-                            const dotMap = {
-                                open: 'dot-open',
-                                paused: 'dot-paused',
-                                closed: 'dot-closed'
-                            };
-                            const labelMap = {
-                                open: 'OPEN',
-                                paused: 'PAUSED',
-                                closed: 'CLOSED'
-                            };
-                            if (badge && data.queue_status) {
-                                badge.className = 'status-pill ' + (pillMap[data.queue_status] ||
-                                    'pill-closed');
-                                badge.innerHTML =
-                                    `<span class="pill-dot ${dotMap[data.queue_status] || 'dot-closed'}"></span> ${labelMap[data.queue_status] || data.queue_status}`;
-                            }
-
-                            // Update served count
-                            const servedEl = document.getElementById('served-count');
-                            if (servedEl && data.entries_today !== undefined) {
-                                servedEl.textContent = data.entries_today;
-                            }
-
-                            // Fetch fresh waiting list
-                            fetch(window.location.href)
-                                .then(r => r.text())
-                                .then(html => {
-                                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                                    document.getElementById('waiting-list').innerHTML =
-                                        doc.getElementById('waiting-list').innerHTML;
-                                    document.getElementById('waiting-count').textContent =
-                                        doc.getElementById('waiting-count').textContent;
-                                });
-                        });
+            if (data.current_ticket) {
+                if (data.current_ticket !== lastTicket) {
+                    playSound();
+                    document.body.classList.add('flash');
+                    setTimeout(() => document.body.classList.remove('flash'), 200);
+                    lastTicket = data.current_ticket;
                 }
-            }, 100);
+                ticketEl.textContent = data.current_ticket;
+                ticketEl.className   = 'ns-ticket';
+                if (labelEl) labelEl.textContent = '';
+            } else {
+                ticketEl.textContent = '—';
+                ticketEl.className   = 'ns-empty';
+                if (labelEl) {
+                    labelEl.textContent = 'No one is being served';
+                    labelEl.className   = 'ns-empty-label';
+                }
+            }
+
+            // STATUS BADGE (including pause reason)
+            const badge = document.getElementById('status-badge');
+            const pillMap  = { open: 'pill-open',   paused: 'pill-paused',   closed: 'pill-closed'  };
+            const dotMap   = { open: 'dot-open',    paused: 'dot-paused',    closed: 'dot-closed'   };
+            const labelMap = { open: 'OPEN',        paused: 'PAUSED',        closed: 'CLOSED'       };
+
+            if (badge && data.queue_status) {
+                let text = labelMap[data.queue_status] || data.queue_status.toUpperCase();
+                if (data.queue_status === 'paused' && data.pause_reason) {
+                    text += ' — ' + data.pause_reason;
+                }
+                badge.className = 'status-pill ' + (pillMap[data.queue_status] || 'pill-closed');
+                badge.innerHTML = `<span class="pill-dot ${dotMap[data.queue_status] || 'dot-closed'}"></span> ${text}`;
+            }
+
+            // SERVED COUNT
+            const servedEl = document.getElementById('served-count');
+            if (servedEl && data.entries_today !== undefined) {
+                servedEl.textContent = data.entries_today;
+            }
+        }
+
+        // ─── REFRESH WAITING LIST (dedicated JSON endpoint) ───────────────────────
+        function refreshWaitingList() {
+            fetch('/q/{{ $business->slug }}/waiting')
+                .then(r => r.json())
+                .then(data => {
+                    const list    = document.getElementById('waiting-list');
+                    const countEl = document.getElementById('waiting-count');
+
+                    if (data.waiting.length === 0) {
+                        list.innerHTML = '<div style="color: rgba(255,255,255,.3)">Queue is empty</div>';
+                    } else {
+                        list.innerHTML = data.waiting.map((entry, i) => `
+                            <div class="waiting-item ${i === 0 ? 'is-next' : ''}">
+                                <span>${i + 1}</span>
+                                <span class="waiting-code">${entry.ticket_code}</span>
+                                ${i === 0 ? '<span class="next-badge">Next</span>' : ''}
+                            </div>
+                        `).join('');
+                    }
+
+                    if (countEl) countEl.textContent = data.count;
+                })
+                .catch(err => console.error('Failed to refresh waiting list:', err));
+        }
+
+        // ─── ECHO ─────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            const channel = window.Echo.channel('queue.{{ $business->slug }}');
+
+            channel.listen('.queue.updated', (data) => {
+                updateUI(data);
+                refreshWaitingList();
+            });
+
+            // Dim screen when connection is lost
+            window.addEventListener('offline', () => {
+                document.body.style.opacity = '0.5';
+            });
+            window.addEventListener('online', () => {
+                document.body.style.opacity = '1';
+            });
         });
     </script>
 

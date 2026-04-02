@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\QLineLogger;
 
 class SendWhatsAppMessage implements ShouldQueue
 {
@@ -87,6 +88,7 @@ class SendWhatsAppMessage implements ShouldQueue
                 'response' => $response->json(),
             ]);
             $this->fail('WhatsApp API error: '.$response->body());
+            QLineLogger::waSent($this->waId, $this->template, $this->businessId);
         }
     }
 
@@ -97,5 +99,6 @@ class SendWhatsAppMessage implements ShouldQueue
             'wa_id' => $this->waId,
             'error' => $e->getMessage(),
         ]);
+        QLineLogger::waFailed($this->waId, $this->template, $response->body());
     }
 }

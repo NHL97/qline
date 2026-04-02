@@ -9,6 +9,7 @@ use App\Services\BillPlzService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Services\QLineLogger;
 
 class BillPlzController extends Controller
 {
@@ -90,6 +91,7 @@ class BillPlzController extends Controller
             }
 
             Log::info('BillPlz payment activated', ['payment_id' => $paymentId]);
+            QLineLogger::paymentConfirmed($payment->business_id, $payment->id, $payment->amount);
         }
 
         return response('OK', 200);

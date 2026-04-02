@@ -31,7 +31,7 @@ Route::get('/print/qr/{slug}', [App\Http\Controllers\PublicQueueController::clas
 Route::get('/print/ticket/{entry}', function (\App\Models\QueueEntry $entry) {
     $business = $entry->business;
     $positionInfo = app(\App\Services\QueueService::class)->getPositionInfo($entry);
-    return view('public/print-ticket', compact('entry', 'business', 'positionInfo'));
+    return view('public.print-ticket', compact('entry', 'business', 'positionInfo'));
 })->middleware(['auth'])->name('print.ticket');
 
 // Business Registration

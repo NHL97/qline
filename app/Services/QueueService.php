@@ -8,6 +8,7 @@ use App\Models\Business;
 use App\Models\QueueEntry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\QLineLogger;
 
 class QueueService
 {
@@ -77,6 +78,8 @@ class QueueService
                 'joined_at' => now(),
                 'cancel_token' => Str::random(32),
             ]);
+
+            QLineLogger::customerJoined($business->id, $waId, $entry->ticket_code, $entry->position);
 
             // Increment entries today
             $business->increment('entries_today');
@@ -153,6 +156,8 @@ class QueueService
                 'called_at' => now(),
             ]);
 
+            QLineLogger::customerCalled($business->id, $next->ticket_code);
+
             if ($next->wa_id) {
                 SendWhatsAppMessage::dispatch(
                     $next->wa_id,
@@ -198,6 +203,8 @@ class QueueService
                 'service_minutes' => $serviceMin,
             ]);
 
+            QLineLogger::customerDone($entry->business_id, $entry->ticket_code, $entry->wait_minutes, $entry->service_minutes);
+
             if ($entry->wa_id) {
                 SendWhatsAppMessage::dispatch(
                     $entry->wa_id,
@@ -228,6 +235,8 @@ class QueueService
                 'done_at' => now(),
             ]);
 
+            QLineLogger::customerSkipped($entry->business_id, $entry->ticket_code);
+
             $this->recalculatePositions($entry->business_id);
             $this->broadcastUpdate($entry->business);
             $this->checkApproaching(Business::findOrFail($entry->business_id));
@@ -245,6 +254,22 @@ class QueueService
                 'status' => 'cancelled',
                 'done_at' => now(),
             ]);
+
+            // Send cancellation WA if customer has WhatsApp
+            if ($entry->wa_id) {
+                SendWhatsAppMessage::dispatch(
+                    $entry->wa_id,
+                    'queue_cancelled',
+                    [
+                        $entry->ticket_code,        // {{1}} ticket
+                        $entry->business->name,      // {{2}} business
+                    ],
+                    $entry->business_id,
+                    $entry->id,
+                );
+            }
+
+            QLineLogger::customerCancelled($entry->business_id, $entry->ticket_code, $entry->wa_id ? 'customer' : 'staff');
 
             $this->recalculatePositions($entry->business_id);
             $this->broadcastUpdate($entry->business);
@@ -266,23 +291,30 @@ class QueueService
                 $business->resetQueue();
             }
 
-            $business->update(['queue_status' => 'open']);
+            $business->update(['queue_status' => 'open', 'pause_reason' => null]);
+
+            QLineLogger::queueOpened($business->id, $business->name);
             $this->broadcastUpdate($business);
         });
     }
 
     // ── Pause Queue ───────────────────────────────────────────────
-    public function pauseQueue(Business $business): void
+    public function pauseQueue(Business $business, string $reason = ''): void
     {
-        $business->update(['queue_status' => 'paused']);
+        $business->update([
+            'queue_status' => 'paused',
+            'pause_reason' => $reason ?: null,
+        ]);
+        QLineLogger::queuePaused($business->id, $business->name);
         $this->broadcastUpdate($business);
-
     }
 
     // ── Close Queue ───────────────────────────────────────────────
     public function closeQueue(Business $business): void
     {
-        $business->update(['queue_status' => 'closed']);
+        $business->update(['queue_status' => 'closed', 'pause_reason' => null]);
+
+        QLineLogger::queueClosed($business->id, $business->name);
         $this->broadcastUpdate($business);
     }
 
@@ -358,6 +390,7 @@ class QueueService
                 ->count(),
             queueStatus: $business->queue_status,
             entriesToday: $business->entries_today,
+            pauseReason: $business->pause_reason,
         );
     }
 }

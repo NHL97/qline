@@ -31,6 +31,7 @@ class Business extends Model
         'entries_today',
         'notify_turns_before',
         'last_reset_at',
+        'pause_reason',
     ];
 
     protected function casts(): array
@@ -50,6 +51,7 @@ class Business extends Model
     public function isPaused(): bool
     {
         return $this->queue_status === 'paused';
+        
     }
 
     public function isClosed(): bool

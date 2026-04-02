@@ -37,7 +37,7 @@ class BusinessForm
                         TextInput::make('slug')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->maxLength(100)
+                            ->maxLength(500)
                             ->helperText('Auto-generated from name'),
                         TextInput::make('join_code')
                             ->required()
@@ -47,10 +47,9 @@ class BusinessForm
                         TextInput::make('phone')
                             ->tel()
                             ->nullable(),
-                        Toggle::make('is_active')
-                            ->label('Active')
-                            ->default(true)
-                            ->inline(false),
+                        TextInput::make('email')
+                            ->email()
+                            ->nullable(),
                     ]),
 
                 Section::make('Location')
@@ -79,9 +78,9 @@ class BusinessForm
                         TextInput::make('daily_limit')
                             ->required()
                             ->numeric()
-                            ->default(100)
+                            ->default(500)
                             ->minValue(1)
-                            ->maxValue(1000)
+                            ->maxValue(500)
                             ->label('Daily Limit'),
                         TextInput::make('notify_turns_before')
                             ->required()

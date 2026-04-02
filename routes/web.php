@@ -37,3 +37,20 @@ Route::get('/print/ticket/{entry}', function (\App\Models\QueueEntry $entry) {
 // Business Registration
 Route::get('/register', [App\Http\Controllers\BusinessRegistrationController::class, 'show'])->name('register')->middleware('guest');
 Route::post('/register', [App\Http\Controllers\BusinessRegistrationController::class, 'store'])->name('register.store')->middleware('guest');
+
+Route::get('/q/{slug}/waiting', function (string $slug) {
+    $business = \App\Models\Business::where('slug', $slug)
+        ->where('is_active', true)
+        ->firstOrFail();
+
+    $waiting = \App\Models\QueueEntry::where('business_id', $business->id)
+        ->where('status', 'waiting')
+        ->orderBy('position')
+        ->take(10)
+        ->get(['ticket_code', 'position']);
+
+    return response()->json([
+        'waiting' => $waiting,
+        'count'   => $waiting->count(),
+    ]);
+})->name('queue.waiting');

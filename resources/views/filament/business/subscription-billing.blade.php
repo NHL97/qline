@@ -85,11 +85,11 @@
           <div class="plan-meta">Valid until <span>{{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->format('d M Y') }}</span></div>
           <div class="days-pill">
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-            {{ \Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now()) }} days remaining
+            {{ round(\Carbon\Carbon::parse($activeSubscription['expires_at'])->diffInDays(now())) }} days remaining
           </div>
         </div>
         <div>
-          <div class="plan-price-big">{{ $activeSubscription['type'] === 'daily' ? 'RM 12' : 'RM 300' }}</div>
+          <div class="plan-price-big">{{ $activeSubscription['type'] === 'daily' ? 'RM 15' : 'RM 400' }}</div>
           <div class="plan-price-sub">per {{ $activeSubscription['type'] === 'daily' ? 'day' : 'month' }}</div>
         </div>
       </div>

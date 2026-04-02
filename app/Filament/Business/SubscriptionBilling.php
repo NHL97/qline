@@ -61,7 +61,7 @@ class SubscriptionBilling extends Page
 
         $amount = $type === 'daily' ? 1500 : 40000; // cents
         $amountRm = $type === 'daily' ? 15.00 : 400.00;
-        $description = "QLine {$type} subscription — {$business->name}";
+        $description = "Qline {$type} subscription — {$business->name}";
 
         // Create subscription record
         $subscription = Subscription::create([

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\WhatsappMessage;
+use App\Services\QLineLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -10,7 +11,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Services\QLineLogger;
 
 class SendWhatsAppMessage implements ShouldQueue
 {
@@ -37,12 +37,13 @@ class SendWhatsAppMessage implements ShouldQueue
         $apiVersion = config('qline.meta.api_version');
 
         if (empty($accessToken) || empty($phoneNumberId)) {
-            Log::warning('WhatsApp not configured — skipping message', [
-                'template' => $this->template,
-                'wa_id' => $this->waId,
-            ]);
+            QLineLogger::waFailed(
+                $this->waId,
+                $this->template,
+                'WhatsApp not configured — META_ACCESS_TOKEN or META_PHONE_NUMBER_ID missing'
+            );
 
-            return;
+            return; // Don't retry — credentials won't appear by themselves
         }
 
         $payload = [
@@ -78,27 +79,29 @@ class SendWhatsAppMessage implements ShouldQueue
             'template' => $this->template,
             'message_id' => $messageId,
             'status' => $response->successful() ? 'sent' : 'failed',
-            'payload' => $response->json(),
+            'payload' => array_merge($response->json(), ['variables' => $this->variables]),
         ]);
 
         if (! $response->successful()) {
-            Log::error('WhatsApp send failed', [
-                'template' => $this->template,
-                'wa_id' => $this->waId,
-                'response' => $response->json(),
-            ]);
-            $this->fail('WhatsApp API error: '.$response->body());
-            QLineLogger::waSent($this->waId, $this->template, $this->businessId);
+            QLineLogger::waFailed($this->waId, $this->template, $response->body());
+
+            // Throw so job retries (up to $tries times)
+            throw new \RuntimeException('WhatsApp API error: '.$response->body());
         }
+
+        QLineLogger::waSent($this->waId, $this->template, $this->businessId);
     }
 
     public function failed(\Throwable $e): void
     {
-        Log::error('SendWhatsAppMessage permanently failed', [
-            'template' => $this->template,
-            'wa_id' => $this->waId,
-            'error' => $e->getMessage(),
-        ]);
-        QLineLogger::waFailed($this->waId, $this->template, $response->body());
+        QLineLogger::waFailed($this->waId, $this->template, $e->getMessage());
+
+        // Mark the message as failed in DB if it was logged
+        WhatsappMessage::where('wa_id', $this->waId)
+            ->where('template', $this->template)
+            ->where('status', 'sent')
+            ->latest()
+            ->first()
+            ?->update(['status' => 'failed']);
     }
 }

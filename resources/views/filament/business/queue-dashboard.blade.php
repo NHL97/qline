@@ -296,8 +296,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 0;
-            gap: 10px;
+            padding: 32px 0;
+            gap: 4px;
         }
 
         .no-serving svg {
@@ -571,11 +571,24 @@
                     </div>
                 @else
                     <div class="no-serving">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
-                            <circle cx="12" cy="12" r="9" />
-                            <path d="M12 8v4M12 16v.5" />
-                        </svg>
-                        <span>No one being served</span>
+                        @if ($this->business->queue_status === 'closed')
+                            <div style="font-size:32px; margin-bottom:8px;">🔒</div>
+                            <span style="font-weight:600; color:#374151;">Queue is closed</span>
+                            <span style="font-size:12px; color:#9ca3af; margin-top:4px;">Open the queue to start
+                                serving</span>
+                        @elseif($this->business->queue_status === 'paused')
+                            <div style="font-size:32px; margin-bottom:8px;">⏸️</div>
+                            <span style="font-weight:600; color:#374151;">Queue is paused</span>
+                            @if ($this->business->pause_reason)
+                                <span
+                                    style="font-size:12px; color:#9ca3af; margin-top:4px;">{{ $this->business->pause_reason }}</span>
+                            @endif
+                        @else
+                            <div style="font-size:32px; margin-bottom:8px;">👋</div>
+                            <span style="font-weight:600; color:#374151;">Ready to serve</span>
+                            <span style="font-size:12px; color:#9ca3af; margin-top:4px;">Press Call Next when
+                                ready</span>
+                        @endif
                     </div>
                 @endif
 
@@ -605,7 +618,12 @@
                         <span class="waiting-time">{{ $entry->joined_at->diffForHumans() }}</span>
                     </div>
                 @empty
-                    <div class="waiting-empty">Queue is empty</div>
+                    <div style="text-align:center; padding:32px 0;">
+                        <div style="font-size:40px; margin-bottom:12px;">🎉</div>
+                        <div style="font-size:14px; font-weight:600; color:#111827; margin-bottom:4px;">Queue is clear
+                        </div>
+                        <div style="font-size:12px; color:#9ca3af;">No one is waiting right now</div>
+                    </div>
                 @endforelse
             </div>
         </div>

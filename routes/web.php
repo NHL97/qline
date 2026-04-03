@@ -6,7 +6,7 @@ use App\Http\Controllers\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome', ['waNumber' => config('qline.wa_number')]);
 })->name('home');
 
 // Public queue pages

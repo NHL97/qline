@@ -44,7 +44,7 @@ class BusinessSettings extends Page
     // Queue settings
     public string $queue_prefix = 'Q';
 
-    public int $daily_limit = 100;
+    public int $daily_limit = 500;
 
     public int $notify_turns_before = 3;
 

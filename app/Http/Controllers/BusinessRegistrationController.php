@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeMail;
 use App\Models\Business;
 use App\Models\User;
+use App\Services\QLineLogger;
 use App\Services\QRCodeGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use App\Services\QLineLogger;
 
 class BusinessRegistrationController extends Controller
 {
@@ -32,7 +34,7 @@ class BusinessRegistrationController extends Controller
             'phone' => 'nullable|string|max:20',
         ]);
 
-        DB::transaction(function () use ($request) {
+        [$user, $business] = DB::transaction(function () use ($request) {
             // Generate unique slug and join code
             $slug = Str::slug($request->business_name);
             $baseSlug = $slug;
@@ -83,7 +85,12 @@ class BusinessRegistrationController extends Controller
 
             Auth::login($user);
             QLineLogger::businessRegistered($business->id, $business->name, $user->email);
+
+            return [$user, $business];
         });
+
+        // Now send email outside transaction
+        Mail::to($user->email)->queue(new WelcomeMail($user, $business));
 
         return redirect('/business');
     }

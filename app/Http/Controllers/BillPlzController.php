@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\QLineLogger;
+use App\Mail\PaymentReceiptMail;
+use App\Mail\SubscriptionActivatedMail;
 
 class BillPlzController extends Controller
 {
@@ -91,6 +93,9 @@ class BillPlzController extends Controller
             }
 
             Log::info('BillPlz payment activated', ['payment_id' => $paymentId]);
+            $owner = $business->owner;
+Mail::to($owner->email)->queue(new SubscriptionActivatedMail($owner, $business, $subscription));
+Mail::to($owner->email)->queue(new PaymentReceiptMail($owner, $business, $payment, $subscription));
             QLineLogger::paymentConfirmed($payment->business_id, $payment->id, $payment->amount);
         }
 
